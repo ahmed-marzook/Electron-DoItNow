@@ -10,3 +10,6 @@ count.txt
 .nitro
 .tanstack
 .wrangler
+*.db
+*.db-shm
+*.db-wal

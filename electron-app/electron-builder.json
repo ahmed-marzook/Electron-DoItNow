@@ -1,0 +1,45 @@
+{
+    "appId": "com.sabrlabs.circle-sync",
+    "icon": "./src/ui/assets/tanstack-circle-logo.png",
+    "productName": "Circle Sync",
+    "directories": {
+        "output": "dist",
+        "buildResources": "src/ui/assets"
+    },
+    "files": [
+        "dist-electron",
+        "dist-react",
+        "package.json",
+        "!node_modules/@esbuild/**/*"
+    ],
+    "asarUnpack": [
+        "node_modules/better-sqlite3/**/*"
+    ],
+    "nativeRebuilder": "sequential",
+    "npmRebuild": true,
+    "buildDependenciesFromSource": true,
+    "win": {
+        "target": [
+            "nsis",
+            "portable",
+            "msi"
+        ]
+    },
+    "nsis": {
+        "oneClick": false,
+        "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+        "target": [
+            "dmg",
+            "zip"
+        ]
+    },
+    "linux": {
+        "target": [
+            "AppImage",
+            "deb"
+        ],
+        "category": "Utility"
+    }
+}
