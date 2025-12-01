@@ -1,10 +1,10 @@
 {
     "appId": "com.sabrlabs.circle-sync",
-    "icon": "./src/ui/assets/tanstack-circle-logo.png",
-    "productName": "Circle Sync",
+    "icon": "./src/renderer/assets/tanstack-circle-logo.png",
+    "productName": "Do It Now",
     "directories": {
         "output": "dist",
-        "buildResources": "src/ui/assets"
+        "buildResources": "src/renderer/assets"
     },
     "files": [
         "dist-electron",

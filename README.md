@@ -375,6 +375,8 @@ To package the application for installation on Windows, Mac, or Linux, create `e
 }
 ```
 
+Run `npm run dist:win` and it should package your application for windows.
+
 ---
 
 ## 15. Create Path Resolvers for Development and Production
@@ -670,7 +672,7 @@ app.on("quit", () => {
 });
 ```
 
-```
+When you run `npm install &7 npm run build && npm run dev` locally a database should be created.
 
 ---
 
@@ -718,4 +720,7 @@ app.on("quit", () => {
 ## License
 
 [Your chosen license]
+
+```
+
 ```
