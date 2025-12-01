@@ -1,41 +1,88 @@
-# Electron + React + TanStack Router + Java Spring Scaffolding Guide (Updated With Comments)
+# Electron + React + TanStack Router Application Setup Guide
 
-## 1. Create the Java backend
-
-Generate your backend using **Spring Initializr** with the dependencies you need.
+A comprehensive guide for scaffolding a modern desktop application using Electron, React, TanStack Router, and optionally Java Spring Boot for backend services.
 
 ---
 
-## 2. Set up the Electron renderer using Vite + React
+## 1. Create the Java Backend (Optional)
 
-Create the frontend:
+If you need a Java backend, generate one using [Spring Initializr](https://start.spring.io/) with your required dependencies.
 
-```sh
+---
+
+## 2. Set Up the Electron Renderer using Vite + React
+
+Create the frontend application:
+
+```bash
 npm create vite@latest frontend
 ```
 
-Install TanStack Router, Tailwind, shadcn (optional), Storybook, etc. as required.
+Select React and TypeScript when prompted.
+
+Install TanStack Router, Tailwind CSS, shadcn/ui, Storybook, and other dependencies as needed.
 
 ---
 
-## 3. Restructure the frontend codebase
+## 3. Restructure the Frontend Codebase
 
 - Move React code → `src/renderer`
 - Create Electron main process → `src/electron`
 - Add a shared folder → `src/shared`
 
-This makes a clean separation between the UI, backend logic, and shared modules.
+```
+electron-app/
+├── src/
+│   ├── renderer/          # React UI code
+│   │   ├── components/
+│   │   ├── routes/
+│   │   └── main.tsx
+│   ├── electron/          # Electron main process
+│   │   ├── main.ts
+│   │   ├── preload.ts
+│   │   ├── database.ts
+│   │   ├── pathResolver.ts
+│   │   ├── util.ts
+│   │   └── tsconfig.json
+│   └── shared/            # Shared utilities and types
+├── dist-react/            # Built React application (gitignore)
+├── dist-electron/         # Compiled Electron code (gitignore)
+├── electron-builder.json
+└── package.json
+```
+
+This creates a clean separation between the UI, desktop logic, and shared modules.
 
 ---
 
 ## 4. Update `vite.config.ts`
 
-Ensure:
+- TanStack Router is configured to auto-generate route trees
+- Path aliases are set
+- Dev server uses port 5123
+- Build output is `dist-react`
 
-- TanStack Router is configured to auto-generate route trees.
-- Path aliases are set.
-- Dev server uses **port 5123**.
-- Build output is **`dist-react`**.
+```typescript
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import { TanStackRouterVite } from "@tanstack/router-vite-plugin";
+
+export default defineConfig({
+  plugins: [react(), TanStackRouterVite()],
+  server: {
+    port: 5123,
+  },
+  build: {
+    outDir: "dist-react",
+  },
+  resolve: {
+    alias: {
+      "@shared": "/src/shared",
+      "@renderer": "/src/renderer",
+    },
+  },
+});
+```
 
 ---
 
@@ -43,15 +90,15 @@ Ensure:
 
 Ensure the entry point matches your new structure:
 
-```
-src/renderer/main.tsx
+```html
+<script type="module" src="/src/renderer/main.tsx"></script>
 ```
 
 ---
 
-## 6. Test the React renderer
+## 6. Test the React Renderer
 
-```sh
+```bash
 npm run dev
 ```
 
@@ -59,15 +106,16 @@ Confirm the UI runs on `http://localhost:5123`.
 
 ---
 
-## 7. Install Electron + native modules
+## 7. Install Electron and Native Modules
 
 ```bash
-npm install -D electron electron-rebuild electron-builder better-sqlite3 cross-env npm-run-all @types/better-sqlite3
+npm install @tanstack/react-router
+npm install -D electron electron-builder better-sqlite3 cross-env npm-run-all @types/better-sqlite3 electron-rebuild
 ```
 
 ---
 
-## 8. Create the Electron main process
+## 8. Create the Electron Main Process
 
 Inside `src/electron`, create:
 
@@ -76,27 +124,34 @@ Inside `src/electron`, create:
 
 ### `src/electron/main.ts` (with explanation comments)
 
-```ts
+```typescript
 import { app, BrowserWindow } from "electron";
 import path from "node:path";
+import { isDev } from "./util.js";
 
 // Creates the browser window instance where your React UI will load
 function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
-    // you can add preload scripts here if needed
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
   });
 
-  // Load the built React UI from dist-react
-  // This ensures production builds load the correct HTML
-  win.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
+  // Load from dev server in development, from built files in production
+  if (isDev()) {
+    win.loadURL("http://localhost:5123");
+  } else {
+    win.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
+  }
 }
 
 app.whenReady().then(() => {
   createWindow();
 
-  // macOS-specific behaviour: reopen a window if dock icon is clicked
+  // macOS-specific behavior: reopen a window if dock icon is clicked
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
@@ -104,7 +159,7 @@ app.whenReady().then(() => {
   });
 });
 
-// Quit when all windows are closed (except macOS)
+// Quit when all windows are closed (except on macOS)
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
@@ -114,15 +169,15 @@ app.on("window-all-closed", () => {
 
 ---
 
-## 9. `src/electron/tsconfig.json` (now with comments)
+## 9. Create `src/electron/tsconfig.json` (with comments)
 
-```jsonc
+```json
 {
   "compilerOptions": {
-    // Enables strict type checking, safer TypeScript
+    // Enables strict type checking for safer TypeScript
     "strict": true,
 
-    // Target modern JS for Electron/Node
+    // Target modern JavaScript for Electron/Node
     "target": "ESNext",
 
     // Use NodeNext so Node.js-style imports work
@@ -131,35 +186,29 @@ app.on("window-all-closed", () => {
     // Output for compiled Electron JS goes here
     "outDir": "../../dist-electron",
 
-    // Skip type checking for `.d.ts` libs for faster builds
+    // Skip type checking for .d.ts libs for faster builds
     "skipLibCheck": true,
 
     // Resolves modules using Node.js resolution rules
     "moduleResolution": "NodeNext"
-
-    // IMPORTANT: If you add aliases, update here (example below)
-    // "paths": {
-    //   "@shared/*": ["../shared/*"],
-    //   "@renderer/*": ["../renderer/*"]
-    // }
   }
 }
 ```
 
 ---
 
-## 9.1 **IMPORTANT:** Update the _root_ Electron TypeScript config too
+## 10. **IMPORTANT:** Update the Root TypeScript Configuration
 
 Electron uses **two tsconfig layers**:
 
 1. `electron-app/tsconfig.json` (root)
 2. `src/electron/tsconfig.json` (local)
 
-You **must** update the root `electron-app/tsconfig.json` to ensure aliases work in both Electron and the renderer.
+You **must** update the root `tsconfig.json` to ensure aliases work in both Electron and the renderer.
 
 Example:
 
-```jsonc
+```json
 {
   "compilerOptions": {
     "baseUrl": "./src",
@@ -181,16 +230,17 @@ This ensures:
 
 ---
 
-## 10. Update `package.json` (with explanatory comments)
+## 11. Update `package.json` (with explanatory comments)
 
-```jsonc
+```json
 {
-  "name": "do-it-now",
+  "name": "your-app-name",
   "version": "0.0.0",
   "private": true,
-  "description": "To Do App in electron with server save",
-
-  "author": { "name": "Ahmed Marzook" },
+  "description": "Your app description",
+  "author": {
+    "name": "Your Name"
+  },
 
   // Required for Electron to know what file to run after build
   "main": "dist-electron/main.js",
@@ -198,25 +248,33 @@ This ensures:
   "type": "module",
 
   "scripts": {
+    // Install native dependencies after npm install
+    "postinstall": "electron-builder install-app-deps && npm run rebuild",
+
+    // Rebuild native modules for Electron
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
+
     // Builds React + Electron TypeScript
-    "build": "vite build && npm run transpile:electron",
+    "build": "vite build && tsc",
+
+    // Development: runs React server and Electron in parallel
+    "dev": "npm-run-all --parallel dev:react dev:electron",
 
     // Development command for React UI
-    "dev:react": "vite --port 3000",
+    "dev:react": "vite",
 
     // Development command for Electron main process
-    "dev:electron": "npm run transpile:electron && electron .",
+    "dev:electron": "npm run transpile:electron && cross-env NODE_ENV=development electron .",
 
-    // Compiles TS → JS using the electron tsconfig
+    // Compiles TypeScript → JavaScript using the electron tsconfig
     "transpile:electron": "tsc --project src/electron/tsconfig.json",
 
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
+    // Build distribution packages for each platform
+    "dist:win": "npm run transpile:electron && npm run build && electron-builder --config electron-builder.json --win --x64",
+    "dist:mac": "npm run transpile:electron && npm run build && electron-builder --config electron-builder.json --mac --arm64",
+    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --config electron-builder.json --linux --x64",
 
     "lint": "eslint",
-    "format": "prettier",
-    "check": "prettier --write . && eslint --fix",
-    "serve": "vite preview",
     "test": "vitest run"
   }
 }
@@ -224,11 +282,11 @@ This ensures:
 
 ---
 
-## 11. Build + run the Electron app
+## 12. Build and Run the Electron App
 
 Build everything:
 
-```sh
+```bash
 npm run build
 ```
 
@@ -239,48 +297,49 @@ You should now have:
 
 Ensure both directories are **gitignored**.
 
-Then run Electron:
+Then run Electron in development mode:
 
-```sh
+```bash
 npm run dev
 ```
 
+This will start the React server and launch Electron with hot-reload support.
+
 ---
 
-## 12. Configure TanStack Router for Electron (hash history)
+## 13. Configure TanStack Router for Electron (Hash History)
 
-Because Electron doesn't use browser navigation, change to `createHashHistory()`.
+Because Electron doesn't use browser navigation, change to `createHashHistory()`:
 
-```ts
+```typescript
 import { createHashHistory, createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
 
 const router = createRouter({
   routeTree,
-  context: {
-    ...TanStackQueryProviderContext,
-  },
   defaultPreload: "intent",
   scrollRestoration: true,
   defaultStructuralSharing: true,
   defaultPreloadStaleTime: 0,
 
-  // Key part for Electron:
+  // Key part for Electron: use hash-based history
   history: createHashHistory(),
 });
 ```
 
-📘 Docs:
-[https://tanstack.com/router/v1/docs/framework/react/guide/history-types](https://tanstack.com/router/v1/docs/framework/react/guide/history-types)
+📘 [TanStack Router History Types Documentation](https://tanstack.com/router/v1/docs/framework/react/guide/history-types)
 
-## 13. Add Electron Builder to package application
+---
 
-To package the applciation to install and use on windows, mac or linux using electron builder create a file in `./electron-app/electron-builder.json` and add the following contents
+## 14. Add Electron Builder to Package Application
+
+To package the application for installation on Windows, Mac, or Linux, create `electron-builder.json`:
 
 ```json
 {
-  "appId": "com.sabrlabs.circle-sync",
-  "icon": "./src/renderer/assets/tanstack-circle-logo.png", // Icon is needed for windows exe to build
-  "productName": "Circle Sync",
+  "appId": "com.yourcompany.yourapp",
+  "icon": "./src/renderer/assets/app-icon.png",
+  "productName": "Your App Name",
   "directories": {
     "output": "dist",
     "buildResources": "src/renderer/assets"
@@ -291,10 +350,14 @@ To package the applciation to install and use on windows, mac or linux using ele
     "package.json",
     "!node_modules/@esbuild/**/*"
   ],
-  "asarUnpack": ["node_modules/better-sqlite3/**/*"], // better-sqlite3 uses C so this needs to be bundled with the code
+
+  // better-sqlite3 uses native C bindings, so it needs to be unpacked
+  "asarUnpack": ["node_modules/better-sqlite3/**/*"],
+
   "nativeRebuilder": "sequential",
   "npmRebuild": true,
   "buildDependenciesFromSource": true,
+
   "win": {
     "target": ["nsis", "portable", "msi"]
   },
@@ -312,35 +375,13 @@ To package the applciation to install and use on windows, mac or linux using ele
 }
 ```
 
-## 14. Updated package.json scripts to build the app as well as DX improvement
+---
 
-include the script to build the electron app for windows, mac and linux
+## 15. Create Path Resolvers for Development and Production
 
-```json
-"scripts": {
-    "postinstall": "electron-builder install-app-deps", // Needed to install the sqlite 3 dependencies
-    "rebuild": "electron-rebuild -f -w better-sqlite3",
-    "build": "vite build && tsc",
-    "build-storybook": "storybook build",
-    "check": "prettier --write . && eslint --fix",
-    "dev": "npm-run-all --parallel dev:react dev:electron", // combined the command and to run the server and electron in parallel
-    "dev:electron": "npm run transpile:electron && cross-env NODE_ENV=development electron .", // this will also use the envroment variable NODE_ENV to know we are in development or production
-    "dev:react": "vite",
-    "dist:linux": "npm run transpile:electron && npm run build && electron-builder --config electron-builder.json --linux --x64", // linux setip
-    "dist:mac": "npm run transpile:electron && npm run build && electron-builder --config electron-builder.json --mac --arm64", // Mac Setup for arm
-    "dist:win": "npm run transpile:electron && npm run build && electron-builder --config electron-builder.json --win --x64", // windows setup
-    "format": "prettier",
-    "lint": "eslint",
-    "serve": "vite preview",
-    "storybook": "storybook dev -p 6006",
-    "test": "vitest run",
-    "transpile:electron": "tsc --project src/electron/tsconfig.json"
-  },
-```
+### Create `src/electron/util.ts`
 
-## 15. Update paths for development and production packaged
-
-Create a file `src/electron/util.ts` to fetch what enviroment we are in
+Determine what environment we are in:
 
 ```typescript
 export function isDev(): boolean {
@@ -348,13 +389,15 @@ export function isDev(): boolean {
 }
 ```
 
-Create a file `src/electron/pathResolver.ts` to resolve the path to either use the react server or the files in the package also included the database path this will be setup in the next set of instructions
+### Create `src/electron/pathResolver.ts`
+
+Resolve paths for both development and production environments:
 
 ```typescript
 import { app } from "electron";
 import path from "path";
-import { isDev } from "./util.js";
 import fs from "node:fs";
+import { isDev } from "./util.js";
 
 /**
  * Get the database file path based on environment
@@ -364,7 +407,7 @@ import fs from "node:fs";
 export function getDatabasePath(): string {
   if (isDev()) {
     // Dev: Store in project root
-    return "dot-it-now.db";
+    return "app-database.db";
   } else {
     // Production: Store in user data directory
     const userDataPath = app.getPath("userData");
@@ -374,11 +417,11 @@ export function getDatabasePath(): string {
       fs.mkdirSync(userDataPath, { recursive: true });
     }
 
-    return path.join(userDataPath, "dot-it-now.db");
+    return path.join(userDataPath, "app-database.db");
   }
 }
 
-export function getPreloadPath() {
+export function getPreloadPath(): string {
   return path.join(
     app.getAppPath(),
     isDev() ? "." : "..",
@@ -386,18 +429,206 @@ export function getPreloadPath() {
   );
 }
 
-export function getUIPath() {
+export function getUIPath(): string {
   return path.join(app.getAppPath(), "/dist-react/index.html");
 }
 
-export function getAssetPath() {
+export function getAssetPath(): string {
   return path.join(app.getAppPath(), isDev() ? "." : "..", "/src/assets");
 }
 ```
 
-update `src/electron/main.ts` create window function
+Now when you run `npm run dev`, both the React server and Electron app will start. The Electron window will use the React dev server with hot reloading enabled.
+
+---
+
+## 16. Adding Database and Connection
+
+Create `src/electron/database.ts` for initial database creation and optional seeding with SQLite3:
 
 ```typescript
+import Database from "better-sqlite3";
+import { getDatabasePath } from "./pathResolver.js";
+
+let db: Database.Database;
+
+/**
+ * Initialize database schema
+ * Creates all necessary tables if they don't exist
+ */
+function initSchema() {
+  // Create todos table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS todos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      completed INTEGER DEFAULT 0,
+      priority TEXT DEFAULT 'medium',
+      due_date TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  // 🔥 Create indexes for faster queries
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_todos_completed ON todos(completed);
+    CREATE INDEX IF NOT EXISTS idx_todos_priority ON todos(priority);
+    CREATE INDEX IF NOT EXISTS idx_todos_due_date ON todos(due_date);
+  `);
+
+  console.log("Database schema initialized");
+}
+
+/**
+ * Seed the database with sample data
+ * Only runs if tables are empty
+ */
+function seedDatabase() {
+  // Seed todos table if empty
+  const todoCount = db.prepare("SELECT COUNT(*) as count FROM todos").get() as {
+    count: number;
+  };
+
+  if (todoCount.count === 0) {
+    const insertTodo = db.prepare(
+      "INSERT INTO todos (title, description, completed, priority, due_date) VALUES (@title, @description, @completed, @priority, @due_date)"
+    );
+
+    const insertManyTodos = db.transaction((todos) => {
+      for (const todo of todos) insertTodo.run(todo);
+    });
+
+    insertManyTodos([
+      {
+        title: "Complete project documentation",
+        description: "Write comprehensive README and API documentation",
+        completed: 0,
+        priority: "high",
+        due_date: "2025-12-15",
+      },
+      {
+        title: "Review pull requests",
+        description: "Review and merge pending PRs from team members",
+        completed: 0,
+        priority: "medium",
+        due_date: "2025-12-05",
+      },
+      {
+        title: "Fix login bug",
+        description: "Resolve authentication timeout issue reported by users",
+        completed: 1,
+        priority: "high",
+        due_date: "2025-12-01",
+      },
+      {
+        title: "Update dependencies",
+        description: "Update npm packages to latest stable versions",
+        completed: 0,
+        priority: "low",
+        due_date: "2025-12-20",
+      },
+      {
+        title: "Team meeting preparation",
+        description: "Prepare slides and agenda for weekly standup",
+        completed: 1,
+        priority: "medium",
+        due_date: "2025-12-02",
+      },
+      {
+        title: "Refactor database queries",
+        description: "Optimize slow queries and add proper indexing",
+        completed: 0,
+        priority: "medium",
+        due_date: "2025-12-10",
+      },
+    ]);
+
+    console.log("Sample todo data inserted");
+  }
+
+  // Log current data
+  const todos = db
+    .prepare("SELECT * FROM todos ORDER BY created_at DESC")
+    .all();
+  console.log("Current todos in database:", todos);
+}
+
+/**
+ * Initialize the database
+ * Must be called after app.whenReady()
+ */
+export function initDatabase() {
+  const dbPath = getDatabasePath();
+  console.log("Database location:", dbPath);
+
+  // 🔥 Remove verbose logging in production for better performance
+  db = new Database(dbPath, { verbose: console.log });
+
+  // 🔥 Performance optimizations
+  // WAL mode allows multiple readers and better concurrency
+  db.pragma("journal_mode = WAL");
+
+  // Increase cache size from default 2MB to 10MB (10000 pages * 1KB)
+  db.pragma("cache_size = 10000");
+
+  // Store temporary tables in memory instead of disk
+  db.pragma("temp_store = MEMORY");
+
+  // Synchronous mode: NORMAL is faster and safe with WAL mode
+  db.pragma("synchronous = NORMAL");
+
+  // Memory-mapped I/O for faster reads (30MB)
+  db.pragma("mmap_size = 30000000");
+
+  console.log("Database optimizations applied");
+
+  // Initialize schema first
+  initSchema();
+
+  // Seed with sample data
+  seedDatabase();
+
+  return db;
+}
+
+/**
+ * Get the database instance
+ */
+export function getDatabase(): Database.Database {
+  if (!db) {
+    throw new Error("Database not initialized. Call initDatabase() first.");
+  }
+  return db;
+}
+
+/**
+ * Close the database connection
+ */
+export function closeDatabase() {
+  try {
+    if (db) {
+      // 🔥 Run checkpoint before closing to ensure WAL data is written
+      db.pragma("wal_checkpoint(TRUNCATE)");
+      db.close();
+      console.log("Database connection closed");
+    }
+  } catch (error) {
+    console.error("Error closing database:", error);
+  }
+}
+```
+
+Update `src/electron/main.ts` to intialise database and close it on shutdown
+
+```typescript
+import { app, BrowserWindow } from "electron";
+
+import path from "node:path";
+import { isDev } from "./util.js";
+import { closeDatabase, initDatabase } from "./database.js";
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 800,
@@ -414,6 +645,77 @@ function createWindow() {
     win.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
   }
 }
+
+app.whenReady().then(() => {
+  initDatabase();
+  createWindow();
+
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow();
+    }
+  });
+});
+
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") {
+    closeDatabase();
+    app.quit();
+  }
+});
+
+// Close database on app quit
+app.on("quit", () => {
+  closeDatabase();
+});
 ```
 
-now run `npm run dev` and you should see that a react server starts up and the elctron app as well whcih opens a browser windows using the react server and hot reloading works
+```
+
+---
+
+## Best Practices
+
+1. **Separation of Concerns**: Keep renderer, electron, and shared code in separate directories
+2. **Path Aliases**: Configure aliases in both root and electron tsconfig files
+3. **Environment Detection**: Use `isDev()` utility to handle development vs. production paths
+4. **Hash Routing**: Always use `createHashHistory()` for TanStack Router in Electron
+5. **Native Modules**: Remember to configure `asarUnpack` for native dependencies like better-sqlite3
+6. **Database Location**: Store production databases in user data directory, not app directory
+
+---
+
+## Troubleshooting
+
+### Module Resolution Issues
+
+- Ensure path aliases are configured in both root and electron tsconfig files
+- Verify `baseUrl` and `paths` match your project structure
+
+### SQLite3 Build Errors
+
+- Run `npm run rebuild` after installing or updating dependencies
+- Check that `electron-builder install-app-deps` runs in postinstall
+- The issue occurs because native Node modules like better-sqlite3 need to be compiled specifically for Electron's Node.js version (NODE_MODULE_VERSION 140 in your case), not the system Node.js version (131).
+
+### White Screen on Load
+
+- Verify `main` field in package.json points to `dist-electron/main.js`
+- Check browser console for path resolution errors
+- Ensure `createHashHistory()` is used in router configuration
+
+---
+
+## Additional Resources
+
+- [Electron Documentation](https://www.electronjs.org/docs/latest)
+- [TanStack Router](https://tanstack.com/router)
+- [Vite](https://vitejs.dev/)
+- [electron-builder](https://www.electron.build/)
+
+---
+
+## License
+
+[Your chosen license]
+```

@@ -9,8 +9,6 @@
   "type": "module",
   "main": "dist-electron/main.js",
   "scripts": {
-    "postinstall": "electron-builder install-app-deps",
-    "rebuild": "electron-rebuild -f -w better-sqlite3",
     "build": "vite build && tsc",
     "build-storybook": "storybook build",
     "check": "prettier --write . && eslint --fix",
@@ -21,7 +19,9 @@
     "dist:mac": "npm run transpile:electron && npm run build && electron-builder --config electron-builder.json --mac --arm64",
     "dist:win": "npm run transpile:electron && npm run build && electron-builder --config electron-builder.json --win --x64",
     "format": "prettier",
+    "postinstall": "electron-builder install-app-deps && npm run rebuild",
     "lint": "eslint",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
     "serve": "vite preview",
     "storybook": "storybook dev -p 6006",
     "test": "vitest run",

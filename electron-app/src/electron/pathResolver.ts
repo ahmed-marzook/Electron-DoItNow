@@ -11,7 +11,7 @@ import fs from 'node:fs'
 export function getDatabasePath(): string {
   if (isDev()) {
     // Dev: Store in project root
-    return 'circle-sync.db'
+    return 'do-it-now.db'
   } else {
     // Production: Store in user data directory
     const userDataPath = app.getPath('userData')
@@ -21,7 +21,7 @@ export function getDatabasePath(): string {
       fs.mkdirSync(userDataPath, { recursive: true })
     }
 
-    return path.join(userDataPath, 'circle-sync.db')
+    return path.join(userDataPath, 'do-it-now.db')
   }
 }
 
