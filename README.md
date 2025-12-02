@@ -254,7 +254,7 @@ This ensures:
     "rebuild": "electron-rebuild -f -w better-sqlite3",
 
     // Builds React + Electron TypeScript
-    "build": "vite build && tsc",
+    "build": "vite build && tsc --project src/electron/tsconfig.json",
 
     // Development: runs React server and Electron in parallel
     "dev": "npm-run-all --parallel dev:react dev:electron",
@@ -685,9 +685,15 @@ app.on("quit", () => {
 
 When you run `npm install && npm run build && npm run dev` locally a database should be created.
 
-## 17. Creating and exposing IPC API for intracting with Database
+## 17. Creating and Exposing an IPC API for Database Interaction
 
-You need to create a few files example can be found in the repo check the `electron-app\src\electron\ipc` this contains setting up the types and the handler and then create the file `electron-app\src\electron\preload.cts` this is what will expose a secure API to the renderer which it can use to interact with the database. and make sure to include the preload in main.ts.
+To interact with the database securely from the renderer, you’ll need to create a small IPC layer within the Electron main process. An example structure is available in the repository under electron-app/src/electron/ipc, which includes the IPC type definitions and handler setup.
+
+Next, create the preload file at electron-app/src/electron/preload.cts. This file will expose a secure, type-safe API to the renderer through contextBridge. Ensure that this preload script is registered in your main.ts so it loads correctly when the app starts.
+
+After launching the app, open the Developer Tools to confirm that the API has been registered. If something is misconfigured, you’ll usually see an error message there. You can also test the IPC functions directly in the console.
+
+Finally, once you begin using the shared folder, remember to update all relevant output paths — especially in your package.json — because dist-electron will now include compiled files from the shared directory as well.
 
 ---
 

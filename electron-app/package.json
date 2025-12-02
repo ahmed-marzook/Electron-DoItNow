@@ -7,9 +7,9 @@
     "name": "Ahmed Marzook"
   },
   "type": "module",
-  "main": "dist-electron/main.js",
+  "main": "dist-electron/electron/main.js",
   "scripts": {
-    "build": "vite build && tsc",
+    "build": "vite build && tsc --project src/electron/tsconfig.json",
     "build-storybook": "storybook build",
     "check": "prettier --write . && eslint --fix",
     "dev": "npm-run-all --parallel dev:react dev:electron",
