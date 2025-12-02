@@ -72,6 +72,50 @@ function TodosPage() {
     )
   }
 
+  const toggleTodoCompletion = async (todo: Todo) => {
+    try {
+      const newCompletedStatus = todo.completed === 1 ? 0 : 1
+
+      // Optimistically update UI
+
+      setTodos((prevTodos) =>
+        prevTodos.map((t) =>
+          t.id === todo.id
+            ? { ...t, completed: newCompletedStatus as 0 | 1 }
+            : t,
+        ),
+      )
+
+      // Update in database
+
+      const response = await window.electronAPI.todo.update(todo.id, {
+        completed: newCompletedStatus as 0 | 1,
+      })
+
+      if (!response.success) {
+        // Revert on failure
+
+        setTodos((prevTodos) =>
+          prevTodos.map((t) =>
+            t.id === todo.id ? { ...t, completed: todo.completed } : t,
+          ),
+        )
+
+        setError(response.error || 'Failed to update todo')
+      }
+    } catch (err) {
+      // Revert on error
+
+      setTodos((prevTodos) =>
+        prevTodos.map((t) =>
+          t.id === todo.id ? { ...t, completed: todo.completed } : t,
+        ),
+      )
+
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    }
+  }
+
   return (
     <div
       className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 p-4 text-white"
@@ -109,8 +153,10 @@ function TodosPage() {
                       <input
                         type="checkbox"
                         checked={todo.completed === 1}
-                        readOnly
+                        onChange={() => toggleTodoCompletion(todo)}
                         className="w-5 h-5 rounded cursor-pointer"
+                        title="Toggle todo completion status"
+                        aria-label="Toggle todo completion status"
                       />
                       <h3
                         className={`text-lg font-semibold ${
@@ -130,7 +176,9 @@ function TodosPage() {
                     <div className="flex items-center gap-3 ml-8 text-xs text-white/60">
                       <span>Created: {formatDate(todo.created_at)}</span>
                       {todo.due_date && (
-                        <span>Due: {new Date(todo.due_date).toLocaleDateString()}</span>
+                        <span>
+                          Due: {new Date(todo.due_date).toLocaleDateString()}
+                        </span>
                       )}
                     </div>
                   </div>
