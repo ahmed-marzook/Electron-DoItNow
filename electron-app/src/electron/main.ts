@@ -41,5 +41,7 @@ app.on('window-all-closed', () => {
 
 // Close database on app quit
 app.on('quit', () => {
-  closeDatabase()
+  if (process.platform === 'darwin') {
+    closeDatabase()
+  }
 })

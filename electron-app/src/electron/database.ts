@@ -1,13 +1,15 @@
 import Database from 'better-sqlite3'
 import { getDatabasePath } from './pathResolver.js'
 
-let db: Database.Database
+let db: Database.Database | null = null
 
 /**
  * Initialize database schema
  * Creates all necessary tables if they don't exist
  */
 function initSchema() {
+  if (!db) return
+
   // Create todos table
   db.exec(`
     CREATE TABLE IF NOT EXISTS todos (
@@ -37,6 +39,8 @@ function initSchema() {
  * Only runs if tables are empty
  */
 function seedDatabase() {
+  if (!db) return
+
   // Seed todos table if empty
   const todoCount = db.prepare('SELECT COUNT(*) as count FROM todos').get() as {
     count: number
@@ -157,12 +161,18 @@ export function getDatabase(): Database.Database {
  */
 export function closeDatabase() {
   try {
-    if (db) {
-      // 🔥 Run checkpoint before closing to ensure WAL data is written
-      db.pragma('wal_checkpoint(TRUNCATE)')
-      db.close()
-      console.log('Database connection closed')
+    // If you want to be extra safe and use better-sqlite3's flag:
+    if (!db || !(db as any).open) {
+      console.log('Database connection is already closed')
+      db = null
+      return
     }
+
+    db.pragma('wal_checkpoint(TRUNCATE)')
+    db.close()
+    console.log('Database connection closed')
+
+    db = null
   } catch (error) {
     console.error('Error closing database:', error)
   }

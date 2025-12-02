@@ -109,8 +109,7 @@ Confirm the UI runs on `http://localhost:5123`.
 ## 7. Install Electron and Native Modules
 
 ```bash
-npm install @tanstack/react-router
-npm install -D electron electron-builder better-sqlite3 cross-env npm-run-all @types/better-sqlite3 electron-rebuild
+npm install electron electron-builder better-sqlite3 cross-env npm-run-all @types/better-sqlite3 electron-rebuild
 ```
 
 ---
@@ -452,13 +451,15 @@ Create `src/electron/database.ts` for initial database creation and optional see
 import Database from "better-sqlite3";
 import { getDatabasePath } from "./pathResolver.js";
 
-let db: Database.Database;
+let db: Database.Database | null = null;
 
 /**
  * Initialize database schema
  * Creates all necessary tables if they don't exist
  */
 function initSchema() {
+  if (!db) return;
+
   // Create todos table
   db.exec(`
     CREATE TABLE IF NOT EXISTS todos (
@@ -488,6 +489,8 @@ function initSchema() {
  * Only runs if tables are empty
  */
 function seedDatabase() {
+  if (!db) return;
+
   // Seed todos table if empty
   const todoCount = db.prepare("SELECT COUNT(*) as count FROM todos").get() as {
     count: number;
@@ -610,12 +613,18 @@ export function getDatabase(): Database.Database {
  */
 export function closeDatabase() {
   try {
-    if (db) {
-      // 🔥 Run checkpoint before closing to ensure WAL data is written
-      db.pragma("wal_checkpoint(TRUNCATE)");
-      db.close();
-      console.log("Database connection closed");
+    // If you want to be extra safe and use better-sqlite3's flag:
+    if (!db || !(db as any).open) {
+      console.log("Database connection is already closed");
+      db = null;
+      return;
     }
+
+    db.pragma("wal_checkpoint(TRUNCATE)");
+    db.close();
+    console.log("Database connection closed");
+
+    db = null;
   } catch (error) {
     console.error("Error closing database:", error);
   }
@@ -668,11 +677,13 @@ app.on("window-all-closed", () => {
 
 // Close database on app quit
 app.on("quit", () => {
-  closeDatabase();
+  if (process.platform === "darwin") {
+    closeDatabase();
+  }
 });
 ```
 
-When you run `npm install &7 npm run build && npm run dev` locally a database should be created.
+When you run `npm install && npm run build && npm run dev` locally a database should be created.
 
 ---
 
