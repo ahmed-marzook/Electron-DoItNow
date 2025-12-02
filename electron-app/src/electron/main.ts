@@ -3,6 +3,8 @@ import { app, BrowserWindow } from 'electron'
 import path from 'node:path'
 import { isDev } from './util.js'
 import { closeDatabase, initDatabase } from './database.js'
+import { registerTodoHandlers } from './ipc/todoHandlers.js'
+import { getPreloadPath } from './pathResolver.js'
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -11,6 +13,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      preload: getPreloadPath(),
     },
   })
 
@@ -22,7 +25,13 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  // Initialize database (creates tables and seeds data)
   initDatabase()
+
+  // Register IPC handlers for To Do operations
+  registerTodoHandlers()
+
+  // Create the main window
   createWindow()
 
   app.on('activate', () => {

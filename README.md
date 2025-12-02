@@ -685,6 +685,10 @@ app.on("quit", () => {
 
 When you run `npm install && npm run build && npm run dev` locally a database should be created.
 
+## 17. Creating and exposing IPC API for intracting with Database
+
+You need to create a few files example can be found in the repo check the `electron-app\src\electron\ipc` this contains setting up the types and the handler and then create the file `electron-app\src\electron\preload.cts` this is what will expose a secure API to the renderer which it can use to interact with the database. and make sure to include the preload in main.ts.
+
 ---
 
 ## Best Practices

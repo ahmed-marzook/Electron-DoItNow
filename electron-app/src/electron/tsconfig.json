@@ -5,6 +5,11 @@
     "module": "NodeNext",
     "outDir": "../../dist-electron",
     "skipLibCheck": true,
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "paths": {
+      "@/*": ["../*"],
+      "@shared/*": ["../shared/*"],
+      "@electron/*": ["./*"]
+    }
   }
 }
