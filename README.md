@@ -685,15 +685,127 @@ app.on("quit", () => {
 
 When you run `npm install && npm run build && npm run dev` locally a database should be created.
 
+Here is the updated instruction section containing **Todo-only** IPC tests — clean, focused, and ready to drop in.
+
 ## 17. Creating and Exposing an IPC API for Database Interaction
 
-To interact with the database securely from the renderer, you’ll need to create a small IPC layer within the Electron main process. An example structure is available in the repository under electron-app/src/electron/ipc, which includes the IPC type definitions and handler setup.
+To interact with the database securely from the renderer, you’ll create a dedicated IPC layer within the Electron main process. This lives under:
 
-Next, create the preload file at electron-app/src/electron/preload.cts. This file will expose a secure, type-safe API to the renderer through contextBridge. Ensure that this preload script is registered in your main.ts so it loads correctly when the app starts.
+- `electron-app/src/electron/ipc` – IPC type definitions and todo handlers (e.g. `todo.handlers.ts`)
+- `electron-app/src/electron/database.ts` – the central SQLite connection and schema setup
 
-After launching the app, open the Developer Tools to confirm that the API has been registered. If something is misconfigured, you’ll usually see an error message there. You can also test the IPC functions directly in the console.
+Next, create the preload file at:
 
-Finally, once you begin using the shared folder, remember to update all relevant output paths — especially in your package.json — because dist-electron will now include compiled files from the shared directory as well.
+- `electron-app/src/electron/preload.cts`
+
+This file exposes a secure, type-safe API to the renderer using `contextBridge`. Make sure this preload script is registered in `main.ts` through the `preload` option of `BrowserWindow`.
+
+### Verifying the IPC API in DevTools
+
+After launching the app, open **Developer Tools** inside your renderer window and verify that the API exists:
+
+```js
+window.electronAPI;
+```
+
+You should see:
+
+```js
+{
+  todo: { getAll: f, getById: f, create: f, update: f, delete: f, ... }
+}
+```
+
+If the object is missing, the preload script is not loading correctly.
+
+---
+
+### Testing Todo IPC Calls from the Chromium Console
+
+You can directly run the Todo database operations from the DevTools console to confirm everything works end-to-end.
+
+#### **1. Fetch all todos**
+
+```js
+window.electronAPI.todo.getAll().then(console.log);
+```
+
+---
+
+#### **2. Create a new todo**
+
+```js
+window.electronAPI.todo
+  .create({
+    title: "Test todo from DevTools",
+    description: "Created using the console",
+    completed: 0,
+    priority: "medium",
+    due_date: "2025-12-15",
+  })
+  .then(console.log);
+```
+
+---
+
+#### **3. Fetch a single todo by ID**
+
+```js
+window.electronAPI.todo.getById(1).then(console.log);
+```
+
+If ID doesn’t exist, you'll get an error in the `IpcResponse`.
+
+---
+
+#### **4. Update an existing todo**
+
+```js
+window.electronAPI.todo
+  .update(1, {
+    completed: 1,
+    title: "Updated via DevTools",
+  })
+  .then(console.log);
+```
+
+---
+
+#### **5. Delete a todo**
+
+```js
+window.electronAPI.todo.delete(1).then(console.log);
+```
+
+---
+
+### (Optional) Test Todo Event Subscriptions
+
+You can listen for real-time DB update events:
+
+```js
+const unsub = window.electronAPI.todo.onTodoAdded((todo) => {
+  console.log("Todo added:", todo);
+});
+```
+
+Then create a todo:
+
+```js
+window.electronAPI.todo.create({ title: "Event test" });
+```
+
+Unsubscribe when done:
+
+```js
+unsub();
+```
+
+---
+
+If any of these produce errors, check both the **main process console** and **renderer DevTools** — IPC mistakes usually show up there.
+
+When integrating the shared folder, remember to update all build output paths (including `package.json`) so that `dist-electron` includes the compiled shared types and handlers.
 
 ---
 
