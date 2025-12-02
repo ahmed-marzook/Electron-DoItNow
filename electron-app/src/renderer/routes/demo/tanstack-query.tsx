@@ -89,7 +89,11 @@ function TodosPage() {
       // Update in database
 
       const response = await window.electronAPI.todo.update(todo.id, {
+        title: todo.title,
+        description: todo.description,
         completed: newCompletedStatus as 0 | 1,
+        priority: todo.priority,
+        due_date: todo.due_date,
       })
 
       if (!response.success) {
