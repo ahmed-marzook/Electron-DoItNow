@@ -6,6 +6,8 @@ spring:
     username: ${DO_IT_NOW_DB_USERNAME:postgres}
     password: ${DO_IT_NOW_DB_PASSWORD:postgres}
   jpa:
+    hibernate:
+      ddl-auto: none
     open-in-view: false
     show-sql: false
     properties:
@@ -23,3 +25,8 @@ spring:
     locations: classpath:db/migration
     baseline-version: 0
     validate-on-migrate: true
+
+logging:
+  level:
+    org.flywaydb: DEBUG
+    org.springframework.boot.autoconfigure.flyway: DEBUG
