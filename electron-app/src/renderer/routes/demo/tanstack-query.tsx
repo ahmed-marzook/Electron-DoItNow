@@ -33,6 +33,42 @@ function TodosPage() {
     }
   }
 
+  const toggleTodoCompletion = async (todo: Todo) => {
+    try {
+      const newCompletedStatus = todo.completed === 1 ? 0 : 1
+
+      // Optimistically update UI
+      setTodos((prevTodos) =>
+        prevTodos.map((t) =>
+          t.id === todo.id ? { ...t, completed: newCompletedStatus as 0 | 1 } : t
+        )
+      )
+
+      // Update in database
+      const response = await window.electronAPI.todo.update(todo.id, {
+        completed: newCompletedStatus as 0 | 1,
+      })
+
+      if (!response.success) {
+        // Revert on failure
+        setTodos((prevTodos) =>
+          prevTodos.map((t) =>
+            t.id === todo.id ? { ...t, completed: todo.completed } : t
+          )
+        )
+        setError(response.error || 'Failed to update todo')
+      }
+    } catch (err) {
+      // Revert on error
+      setTodos((prevTodos) =>
+        prevTodos.map((t) =>
+          t.id === todo.id ? { ...t, completed: todo.completed } : t
+        )
+      )
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    }
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -109,7 +145,7 @@ function TodosPage() {
                       <input
                         type="checkbox"
                         checked={todo.completed === 1}
-                        readOnly
+                        onChange={() => toggleTodoCompletion(todo)}
                         className="w-5 h-5 rounded cursor-pointer"
                       />
                       <h3
