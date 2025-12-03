@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import type { Todo } from '@shared/types/todo.types'
+import { todoService } from '../services/todoService'
 
 export const Route = createFileRoute('/')({
   component: TodosPage,
@@ -33,13 +34,8 @@ function TodosPage() {
     try {
       setLoading(true)
       setError(null)
-      const response = await window.electronAPI.todo.getAll()
-
-      if (response.success && response.data) {
-        setTodos(response.data)
-      } else {
-        setError(response.error || 'Failed to load todos')
-      }
+      const data = await todoService.getAll()
+      setTodos(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -91,7 +87,6 @@ function TodosPage() {
       const newCompletedStatus = todo.completed === 1 ? 0 : 1
 
       // Optimistically update UI
-
       setTodos((prevTodos) =>
         prevTodos.map((t) =>
           t.id === todo.id
@@ -101,35 +96,20 @@ function TodosPage() {
       )
 
       // Update in database
-
-      const response = await window.electronAPI.todo.update(todo.id, {
+      await todoService.update(todo.id, {
         title: todo.title,
         description: todo.description,
         completed: newCompletedStatus as 0 | 1,
         priority: todo.priority,
         due_date: todo.due_date,
       })
-
-      if (!response.success) {
-        // Revert on failure
-
-        setTodos((prevTodos) =>
-          prevTodos.map((t) =>
-            t.id === todo.id ? { ...t, completed: todo.completed } : t,
-          ),
-        )
-
-        setError(response.error || 'Failed to update todo')
-      }
     } catch (err) {
       // Revert on error
-
       setTodos((prevTodos) =>
         prevTodos.map((t) =>
           t.id === todo.id ? { ...t, completed: todo.completed } : t,
         ),
       )
-
       setError(err instanceof Error ? err.message : 'An error occurred')
     }
   }
@@ -142,7 +122,7 @@ function TodosPage() {
 
     try {
       setError(null)
-      const response = await window.electronAPI.todo.create({
+      const createdTodo = await todoService.create({
         title: newTodo.title,
         description: newTodo.description || null,
         completed: 0,
@@ -150,18 +130,14 @@ function TodosPage() {
         due_date: newTodo.due_date || null,
       })
 
-      if (response.success && response.data) {
-        setTodos((prevTodos) => [response.data!, ...prevTodos])
-        setNewTodo({
-          title: '',
-          description: '',
-          priority: 'medium',
-          due_date: '',
-        })
-        setShowCreateForm(false)
-      } else {
-        setError(response.error || 'Failed to create todo')
-      }
+      setTodos((prevTodos) => [createdTodo, ...prevTodos])
+      setNewTodo({
+        title: '',
+        description: '',
+        priority: 'medium',
+        due_date: '',
+      })
+      setShowCreateForm(false)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     }
@@ -170,13 +146,8 @@ function TodosPage() {
   const deleteTodo = async (id: number) => {
     try {
       setError(null)
-      const response = await window.electronAPI.todo.delete(id)
-
-      if (response.success) {
-        setTodos((prevTodos) => prevTodos.filter((t) => t.id !== id))
-      } else {
-        setError(response.error || 'Failed to delete todo')
-      }
+      await todoService.delete(id)
+      setTodos((prevTodos) => prevTodos.filter((t) => t.id !== id))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     }
@@ -217,7 +188,7 @@ function TodosPage() {
         return
       }
 
-      const response = await window.electronAPI.todo.update(id, {
+      const updatedTodo = await todoService.update(id, {
         title: editTodo.title,
         description: editTodo.description || null,
         completed: todo.completed,
@@ -225,14 +196,10 @@ function TodosPage() {
         due_date: editTodo.due_date || null,
       })
 
-      if (response.success && response.data) {
-        setTodos((prevTodos) =>
-          prevTodos.map((t) => (t.id === id ? response.data! : t)),
-        )
-        cancelEditing()
-      } else {
-        setError(response.error || 'Failed to update todo')
-      }
+      setTodos((prevTodos) =>
+        prevTodos.map((t) => (t.id === id ? updatedTodo : t)),
+      )
+      cancelEditing()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     }
