@@ -3,17 +3,74 @@ import {
   SyncQueueInsert,
   SyncQueueRow,
   SyncStatus,
+  SyncActionType,
+  SyncEntityType,
 } from '@electron/types/syncQueue.types.js'
 
 /**
  * Service for handling all database operations related to Sync Queues
- * Encapsulates SQLite queries and provides a clean interface for todo CRUD operations
+ * Encapsulates SQLite queries and provides a clean interface for sync queue CRUD operations
  */
 class SyncQueueDatabaseService {
   private db: Database
 
   constructor(database: Database) {
     this.db = database
+  }
+
+  /**
+   * Queue an entity action for sync (simplified helper)
+   * Automatically generates ID and timestamp
+   */
+  queueAction<T = any>(
+    actionType: SyncActionType,
+    entityType: SyncEntityType,
+    entityId: string,
+    payload: T,
+  ): SyncQueueRow {
+    const item: SyncQueueInsert = {
+      id: crypto.randomUUID(),
+      action_type: actionType,
+      entity_type: entityType,
+      entity_id: entityId,
+      payload: JSON.stringify(payload),
+      created_at: Date.now(),
+    }
+
+    return this.insert(item)
+  }
+
+  /**
+   * Queue a create action
+   */
+  queueCreate<T = any>(
+    entityType: SyncEntityType,
+    entityId: string,
+    payload: T,
+  ): SyncQueueRow {
+    return this.queueAction('CREATE', entityType, entityId, payload)
+  }
+
+  /**
+   * Queue an update action
+   */
+  queueUpdate<T = any>(
+    entityType: SyncEntityType,
+    entityId: string,
+    payload: T,
+  ): SyncQueueRow {
+    return this.queueAction('UPDATE', entityType, entityId, payload)
+  }
+
+  /**
+   * Queue a delete action
+   */
+  queueDelete<T = any>(
+    entityType: SyncEntityType,
+    entityId: string,
+    payload: T,
+  ): SyncQueueRow {
+    return this.queueAction('DELETE', entityType, entityId, payload)
   }
 
   /**

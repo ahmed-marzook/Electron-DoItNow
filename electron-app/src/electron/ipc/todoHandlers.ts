@@ -71,15 +71,7 @@ export function registerTodoHandlers() {
     (_event, todoData: TodoCreateInput): IpcResponse<Todo> => {
       try {
         const newTodo = todoDbService.createTodo(todoData)
-        const insertItem: SyncQueueInsert = {
-          id: crypto.randomUUID(),
-          action_type: 'CREATE',
-          entity_type: 'todo',
-          entity_id: newTodo.id.toString(),
-          payload: JSON.stringify(todoData),
-          created_at: Date.now(),
-        }
-        const syncItem = syncQueueService.insert(insertItem)
+        syncQueueService.queueCreate('todo', newTodo.id.toString(), newTodo)
         return { success: true, data: newTodo }
       } catch (error) {
         console.error('Error creating todo:', error)
@@ -102,6 +94,12 @@ export function registerTodoHandlers() {
           return { success: false, error: `Todo with id ${id} not found` }
         }
 
+        syncQueueService.queueUpdate(
+          'todo',
+          updatedTodo.id.toString(),
+          updatedTodo,
+        )
+
         return { success: true, data: updatedTodo }
       } catch (error) {
         console.error('Error updating todo:', error)
@@ -120,6 +118,8 @@ export function registerTodoHandlers() {
       if (!deleted) {
         return { success: false, error: `Todo with id ${id} not found` }
       }
+
+      syncQueueService.queueDelete('todo', id.toString(), { id })
 
       return { success: true }
     } catch (error) {
