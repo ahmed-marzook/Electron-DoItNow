@@ -7,8 +7,8 @@ import type {
   TodoUpdateInput,
 } from '@shared/types/index.js'
 import type { IpcResponse } from './ipc.types.js'
-import { SyncQueueDatabaseService } from '@electron/service/syncQueueDatabaseService.js'
-import { SyncQueueInsert } from '@electron/types/syncQueue.types.js'
+import { SyncQueueDatabaseService } from '../service/syncQueueDatabaseService.js'
+import { SyncQueueInsert } from '../types/syncQueue.types.js'
 
 /**
  * List of registered IPC channels for cleanup
