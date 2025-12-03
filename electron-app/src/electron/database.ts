@@ -31,6 +31,26 @@ function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_todos_due_date ON todos(due_date);
   `)
 
+  db.exec(`
+    CREATE TABLE sync_queue (
+      id TEXT PRIMARY KEY,
+      action_type TEXT NOT NULL, -- 'CREATE', 'UPDATE', 'DELETE'
+      entity_type TEXT NOT NULL, -- 'todo', 'habit'
+      entity_id TEXT NOT NULL,
+      payload TEXT NOT NULL, -- JSON string
+      created_at INTEGER NOT NULL,
+      retry_count INTEGER DEFAULT 0,
+      status TEXT DEFAULT 'pending', -- 'pending', 'failed', 'processing'
+      error_message TEXT,
+      last_attempt_at INTEGER
+    );
+  `)
+
+  db.exec(`
+    CREATE INDEX idx_status ON sync_queue(status);
+    CREATE INDEX idx_created_at ON sync_queue(created_at);
+  `)
+
   console.log('Database schema initialized')
 }
 
