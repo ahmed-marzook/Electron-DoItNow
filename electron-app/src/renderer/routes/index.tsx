@@ -248,6 +248,7 @@ function TodosPage() {
                       })
                     }
                     className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label="Priority level"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -265,6 +266,8 @@ function TodosPage() {
                       setNewTodo({ ...newTodo, due_date: e.target.value })
                     }
                     className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Select a due date"
+                    aria-label="Due date"
                   />
                 </div>
               </div>
@@ -298,8 +301,9 @@ function TodosPage() {
                         checked={todo.completed === 1}
                         onChange={() => toggleTodoCompletion(todo)}
                         className="w-5 h-5 rounded cursor-pointer"
-                        title="Toggle todo completion status"
-                        aria-label="Toggle todo completion status"
+                        title="Mark todo as complete"
+                        aria-label={`Mark "${todo.title}" as complete`}
+                        id={`todo-checkbox-${todo.id}`}
                       />
                       <h3
                         className={`text-lg font-semibold ${
