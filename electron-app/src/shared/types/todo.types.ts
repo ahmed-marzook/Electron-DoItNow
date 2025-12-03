@@ -42,3 +42,22 @@ export interface TodoUpdateInput {
   priority?: TodoPriority
   due_date?: string | null
 }
+
+export interface TodoRequest {
+  title: string
+  description?: string
+  completed?: boolean
+  priority?: 'low' | 'medium' | 'high'
+  dueDate?: string // ISO 8601 format
+}
+
+export interface TodoResponse {
+  id: number
+  title: string
+  description?: string
+  completed: boolean
+  priority: string
+  dueDate?: string
+  createdAt: string
+  updatedAt: string
+}
