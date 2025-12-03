@@ -141,7 +141,7 @@ export function initDatabase() {
   initSchema()
 
   // Seed with sample data
-  seedDatabase()
+  // seedDatabase()
 
   return db
 }
