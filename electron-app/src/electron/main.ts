@@ -1,10 +1,9 @@
 import { app, BrowserWindow } from 'electron'
 
-import path from 'node:path'
 import { isDev } from './util.js'
 import { closeDatabase, initDatabase } from './database.js'
 import { registerTodoHandlers } from './ipc/todoHandlers.js'
-import { getPreloadPath } from './pathResolver.js'
+import { getPreloadPath, getUIPath } from './pathResolver.js'
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -20,7 +19,7 @@ function createWindow() {
   if (isDev()) {
     win.loadURL('http://localhost:5123')
   } else {
-    win.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'))
+    win.loadFile(getUIPath())
   }
 }
 
