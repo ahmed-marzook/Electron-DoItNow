@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron'
 import { getDatabase } from '../database.js'
+import { TodoDatabaseService } from '../service/todoDatabaseService.js'
 import type {
   Todo,
   TodoCreateInput,
@@ -24,6 +25,7 @@ const IPC_CHANNELS = [
  */
 export function registerTodoHandlers() {
   const db = getDatabase()
+  const todoDbService = new TodoDatabaseService(db)
 
   /**
    * Get all todos from the database
@@ -31,9 +33,7 @@ export function registerTodoHandlers() {
    */
   ipcMain.handle('todo:getAll', (): IpcResponse<Todo[]> => {
     try {
-      const todos = db
-        .prepare('SELECT * FROM todos ORDER BY created_at DESC')
-        .all() as Todo[]
+      const todos = todoDbService.getAllTodos()
       return { success: true, data: todos }
     } catch (error) {
       console.error('Error fetching todos:', error)
@@ -46,9 +46,7 @@ export function registerTodoHandlers() {
    */
   ipcMain.handle('todo:getById', (_event, id: number): IpcResponse<Todo> => {
     try {
-      const todo = db.prepare('SELECT * FROM todos WHERE id = ?').get(id) as
-        | Todo
-        | undefined
+      const todo = todoDbService.getTodoById(id)
 
       if (!todo) {
         return { success: false, error: `Todo with id ${id} not found` }
@@ -69,17 +67,7 @@ export function registerTodoHandlers() {
     'todo:create',
     (_event, todoData: TodoCreateInput): IpcResponse<Todo> => {
       try {
-        const stmt = db.prepare(`
-          INSERT INTO todos (title, description, completed, priority, due_date)
-          VALUES (@title, @description, @completed, @priority, @due_date)
-        `)
-
-        const info = stmt.run(todoData)
-
-        const newTodo = db
-          .prepare('SELECT * FROM todos WHERE id = ?')
-          .get(info.lastInsertRowid) as Todo
-
+        const newTodo = todoDbService.createTodo(todoData)
         return { success: true, data: newTodo }
       } catch (error) {
         console.error('Error creating todo:', error)
@@ -96,27 +84,11 @@ export function registerTodoHandlers() {
     'todo:update',
     (_event, id: number, todoData: TodoUpdateInput): IpcResponse<Todo> => {
       try {
-        const stmt = db.prepare(`
-          UPDATE todos
-          SET
-            title = @title,
-            description = @description,
-            completed = @completed,
-            priority = @priority,
-            due_date = @due_date,
-            updated_at = CURRENT_TIMESTAMP
-          WHERE id = @id
-        `)
+        const updatedTodo = todoDbService.updateTodo(id, todoData)
 
-        const result = stmt.run({ ...todoData, id })
-
-        if (result.changes === 0) {
+        if (!updatedTodo) {
           return { success: false, error: `Todo with id ${id} not found` }
         }
-
-        const updatedTodo = db
-          .prepare('SELECT * FROM todos WHERE id = ?')
-          .get(id) as Todo
 
         return { success: true, data: updatedTodo }
       } catch (error) {
@@ -131,10 +103,9 @@ export function registerTodoHandlers() {
    */
   ipcMain.handle('todo:delete', (_event, id: number): IpcResponse<void> => {
     try {
-      const stmt = db.prepare('DELETE FROM todos WHERE id = ?')
-      const result = stmt.run(id)
+      const deleted = todoDbService.deleteTodo(id)
 
-      if (result.changes === 0) {
+      if (!deleted) {
         return { success: false, error: `Todo with id ${id} not found` }
       }
 
