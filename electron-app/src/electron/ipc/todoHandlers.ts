@@ -8,6 +8,17 @@ import type {
 import type { IpcResponse } from './ipc.types.js'
 
 /**
+ * List of registered IPC channels for cleanup
+ */
+const IPC_CHANNELS = [
+  'todo:getAll',
+  'todo:getById',
+  'todo:create',
+  'todo:update',
+  'todo:delete',
+]
+
+/**
  * Register all IPC handlers for todo operations
  * These handlers provide CRUD functionality for the todos table
  */
@@ -135,4 +146,15 @@ export function registerTodoHandlers() {
   })
 
   console.log('Todo IPC handlers registered')
+}
+
+/**
+ * Unregister all IPC handlers
+ * Call this before app quits to ensure clean shutdown
+ */
+export function unregisterTodoHandlers() {
+  IPC_CHANNELS.forEach((channel) => {
+    ipcMain.removeHandler(channel)
+  })
+  console.log('Todo IPC handlers unregistered')
 }
