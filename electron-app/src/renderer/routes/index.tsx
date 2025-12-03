@@ -10,6 +10,13 @@ function TodosPage() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [newTodo, setNewTodo] = useState({
+    title: '',
+    description: '',
+    priority: 'medium' as 'low' | 'medium' | 'high',
+    due_date: '',
+  })
 
   useEffect(() => {
     loadTodos()
@@ -120,6 +127,54 @@ function TodosPage() {
     }
   }
 
+  const createTodo = async () => {
+    if (!newTodo.title.trim()) {
+      setError('Title is required')
+      return
+    }
+
+    try {
+      setError(null)
+      const response = await window.electronAPI.todo.create({
+        title: newTodo.title,
+        description: newTodo.description || null,
+        completed: 0,
+        priority: newTodo.priority,
+        due_date: newTodo.due_date || null,
+      })
+
+      if (response.success && response.data) {
+        setTodos((prevTodos) => [response.data!, ...prevTodos])
+        setNewTodo({
+          title: '',
+          description: '',
+          priority: 'medium',
+          due_date: '',
+        })
+        setShowCreateForm(false)
+      } else {
+        setError(response.error || 'Failed to create todo')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    }
+  }
+
+  const deleteTodo = async (id: number) => {
+    try {
+      setError(null)
+      const response = await window.electronAPI.todo.delete(id)
+
+      if (response.success) {
+        setTodos((prevTodos) => prevTodos.filter((t) => t.id !== id))
+      } else {
+        setError(response.error || 'Failed to delete todo')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred')
+    }
+  }
+
   return (
     <div
       className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 p-4 text-white"
@@ -131,13 +186,97 @@ function TodosPage() {
       <div className="w-full max-w-4xl p-8 rounded-xl backdrop-blur-md bg-black/50 shadow-xl border-8 border-black/10">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">My Todos</h1>
-          <button
-            onClick={loadTodos}
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-colors"
-          >
-            Refresh
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="px-4 py-2 bg-green-600/80 hover:bg-green-600 border border-green-500/40 rounded-lg transition-colors"
+            >
+              {showCreateForm ? 'Cancel' : 'New Todo'}
+            </button>
+            <button
+              onClick={loadTodos}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-colors"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
+
+        {showCreateForm && (
+          <div className="mb-6 p-4 bg-white/10 border border-white/20 rounded-lg">
+            <h2 className="text-xl font-semibold mb-4">Create New Todo</h2>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  value={newTodo.title}
+                  onChange={(e) =>
+                    setNewTodo({ ...newTodo, title: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter todo title"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={newTodo.description}
+                  onChange={(e) =>
+                    setNewTodo({ ...newTodo, description: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter description (optional)"
+                  rows={3}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Priority
+                  </label>
+                  <select
+                    value={newTodo.priority}
+                    onChange={(e) =>
+                      setNewTodo({
+                        ...newTodo,
+                        priority: e.target.value as 'low' | 'medium' | 'high',
+                      })
+                    }
+                    className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Due Date
+                  </label>
+                  <input
+                    type="date"
+                    value={newTodo.due_date}
+                    onChange={(e) =>
+                      setNewTodo({ ...newTodo, due_date: e.target.value })
+                    }
+                    className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <button
+                onClick={createTodo}
+                className="w-full px-4 py-2 bg-blue-600/80 hover:bg-blue-600 border border-blue-500/40 rounded-lg transition-colors font-medium"
+              >
+                Create Todo
+              </button>
+            </div>
+          </div>
+        )}
 
         {todos.length === 0 ? (
           <div className="text-center py-12 text-white/60">
@@ -194,6 +333,13 @@ function TodosPage() {
                     >
                       {todo.priority.toUpperCase()}
                     </span>
+                    <button
+                      onClick={() => deleteTodo(todo.id)}
+                      className="px-3 py-1 bg-red-600/80 hover:bg-red-600 border border-red-500/40 rounded-lg text-xs transition-colors"
+                      title="Delete todo"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
