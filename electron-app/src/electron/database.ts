@@ -32,7 +32,7 @@ function initSchema() {
   `)
 
   db.exec(`
-    CREATE TABLE sync_queue (
+    CREATE TABLE IF NOT EXISTS sync_queue (
       id TEXT PRIMARY KEY,
       action_type TEXT NOT NULL, -- 'CREATE', 'UPDATE', 'DELETE'
       entity_type TEXT NOT NULL, -- 'todo', 'habit'
@@ -47,8 +47,8 @@ function initSchema() {
   `)
 
   db.exec(`
-    CREATE INDEX idx_status ON sync_queue(status);
-    CREATE INDEX idx_created_at ON sync_queue(created_at);
+    CREATE INDEX IF NOT EXISTS idx_status ON sync_queue(status);
+    CREATE INDEX IF NOT EXISTS idx_created_at ON sync_queue(created_at);
   `)
 
   console.log('Database schema initialized')
