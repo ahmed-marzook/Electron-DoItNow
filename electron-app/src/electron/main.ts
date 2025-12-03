@@ -1,10 +1,12 @@
 import { app, BrowserWindow } from 'electron'
 
-import path from 'node:path'
 import { isDev } from './util.js'
 import { closeDatabase, initDatabase } from './database.js'
-import { registerTodoHandlers } from './ipc/todoHandlers.js'
-import { getPreloadPath } from './pathResolver.js'
+import {
+  registerTodoHandlers,
+  unregisterTodoHandlers,
+} from './ipc/todoHandlers.js'
+import { getPreloadPath, getUIPath } from './pathResolver.js'
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -20,7 +22,7 @@ function createWindow() {
   if (isDev()) {
     win.loadURL('http://localhost:5123')
   } else {
-    win.loadFile(path.join(app.getAppPath(), '/dist-react/index.html'))
+    win.loadFile(getUIPath())
   }
 }
 
@@ -43,14 +45,13 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    closeDatabase()
     app.quit()
   }
 })
 
-// Close database on app quit
-app.on('quit', () => {
-  if (process.platform === 'darwin') {
-    closeDatabase()
-  }
+// Clean up resources before app quits (all platforms)
+app.on('before-quit', () => {
+  console.log('App is quitting, cleaning up resources...')
+  unregisterTodoHandlers()
+  closeDatabase()
 })

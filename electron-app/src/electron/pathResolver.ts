@@ -25,18 +25,31 @@ export function getDatabasePath(): string {
   }
 }
 
+/**
+ * Get the preload script path
+ * Works in both development and production/packaged environments
+ */
 export function getPreloadPath() {
-  return path.join(
-    app.getAppPath(),
-    isDev() ? '.' : '..',
-    '/dist-electron/electron/preload.cjs',
-  )
+  return path.join(app.getAppPath(), 'dist-electron/electron/preload.cjs')
 }
 
+/**
+ * Get the UI HTML file path
+ * Works in both development and production/packaged environments
+ */
 export function getUIPath() {
-  return path.join(app.getAppPath(), '/dist-react/index.html')
+  return path.join(app.getAppPath(), 'dist-react/index.html')
 }
 
+/**
+ * Get the asset directory path
+ * Note: In production, assets are bundled in dist-react, not src/assets
+ */
 export function getAssetPath() {
-  return path.join(app.getAppPath(), isDev() ? '.' : '..', '/src/assets')
+  if (isDev()) {
+    return path.join(app.getAppPath(), 'src/renderer/assets')
+  } else {
+    // In production, assets are in the dist-react directory
+    return path.join(app.getAppPath(), 'dist-react')
+  }
 }
