@@ -211,9 +211,16 @@ function TodosPage() {
 
     try {
       setError(null)
+      const todo = todos.find((t) => t.id === id)
+      if (!todo) {
+        setError('Todo not found')
+        return
+      }
+
       const response = await window.electronAPI.todo.update(id, {
         title: editTodo.title,
         description: editTodo.description || null,
+        completed: todo.completed,
         priority: editTodo.priority,
         due_date: editTodo.due_date || null,
       })
