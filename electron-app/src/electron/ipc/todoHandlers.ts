@@ -7,6 +7,8 @@ import type {
   TodoUpdateInput,
 } from '@shared/types/index.js'
 import type { IpcResponse } from './ipc.types.js'
+import { SyncQueueDatabaseService } from '@electron/service/syncQueueDatabaseService.js'
+import { SyncQueueInsert } from '@electron/types/syncQueue.types.js'
 
 /**
  * List of registered IPC channels for cleanup
@@ -26,6 +28,7 @@ const IPC_CHANNELS = [
 export function registerTodoHandlers() {
   const db = getDatabase()
   const todoDbService = new TodoDatabaseService(db)
+  const syncQueueService = new SyncQueueDatabaseService(db)
 
   /**
    * Get all todos from the database
@@ -68,6 +71,15 @@ export function registerTodoHandlers() {
     (_event, todoData: TodoCreateInput): IpcResponse<Todo> => {
       try {
         const newTodo = todoDbService.createTodo(todoData)
+        const insertItem: SyncQueueInsert = {
+          id: crypto.randomUUID(),
+          action_type: 'CREATE',
+          entity_type: 'todo',
+          entity_id: newTodo.id.toString(),
+          payload: JSON.stringify(todoData),
+          created_at: Date.now(),
+        }
+        const syncItem = syncQueueService.insert(insertItem)
         return { success: true, data: newTodo }
       } catch (error) {
         console.error('Error creating todo:', error)

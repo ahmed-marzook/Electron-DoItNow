@@ -109,7 +109,7 @@ Confirm the UI runs on `http://localhost:5123`.
 ## 7. Install Electron and Native Modules
 
 ```bash
-npm install electron electron-builder better-sqlite3 cross-env npm-run-all @types/better-sqlite3 electron-rebuild
+npm install electron electron-builder better-sqlite3 cross-env npm-run-all @types/electron @types/better-sqlite3 electron-rebuild
 ```
 
 ---
