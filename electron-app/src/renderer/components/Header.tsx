@@ -17,12 +17,9 @@ export default function Header() {
           <Menu size={24} />
         </button>
         <h1 className="ml-4 text-xl font-semibold">
-          <Link to="/">
-            <img
-              src="/tanstack-word-logo-white.svg"
-              alt="TanStack Logo"
-              className="h-10"
-            />
+          <Link to="/" className="flex items-center ">
+            <img src="/do-it-now.svg" alt="Do it Now Logo" className="h-10" />
+            Do It Now
           </Link>
         </h1>
       </header>
@@ -69,7 +66,7 @@ export default function Header() {
             }}
           >
             <Network size={20} />
-            <span className="font-medium">TanStack Query</span>
+            <span className="font-medium">Incoming</span>
           </Link>
 
           {/* Demo Links End */}
