@@ -9,7 +9,7 @@ import {
 import { getPreloadPath, getUIPath } from './pathResolver.js'
 import { CronJob } from 'cron'
 import { SyncService } from './service/SyncService.js'
-import { todoApi } from './service/TodoApiService.js'
+import { todoApi } from './service/todoApiService.js'
 
 let syncJob: CronJob | null = null
 
@@ -39,49 +39,18 @@ app.whenReady().then(async () => {
     batchSize: 50,
   })
 
-  // Define the sync function
-  const runSync = async () => {
-    const timestamp = new Date().toLocaleString()
-    console.log('[Sync] Starting sync job at', timestamp)
-
-    try {
-      if (syncService.isSyncing()) {
-        console.log('[Sync] Previous sync still in progress, skipping...')
-        return
-      }
-
-      const statsBefore = syncService.getQueueStats()
-      console.log('[Sync] Queue before:', {
-        total: statsBefore.total,
-        pending: statsBefore.pending,
-        failed: statsBefore.failed,
-      })
-
-      const result = await syncService.processSyncQueue()
-
-      console.log('[Sync] Completed:', {
-        success: result.success,
-        failed: result.failed,
-        errors: result.errors.length > 0 ? result.errors : undefined,
-      })
-
-      const statsAfter = syncService.getQueueStats()
-      console.log('[Sync] Queue after:', {
-        total: statsAfter.total,
-        pending: statsAfter.pending,
-        failed: statsAfter.failed,
-      })
-    } catch (error) {
-      console.error('[Sync] Error during sync:', error)
-    }
-  }
-
   // Run immediately on startup
   console.log('[Sync] Running initial sync on startup...')
-  await runSync()
+  await syncService.runSync()
 
   // Create cron job with the same function
-  syncJob = new CronJob('* * * * *', runSync, null, true, 'America/New_York')
+  syncJob = new CronJob(
+    '* * * * *',
+    () => syncService.runSync(),
+    null,
+    true,
+    'America/New_York',
+  )
 
   console.log('[Sync] Cron job started - will run every minute')
 

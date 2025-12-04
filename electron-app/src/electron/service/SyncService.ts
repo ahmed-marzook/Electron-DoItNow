@@ -1,6 +1,6 @@
 import type { Database } from 'better-sqlite3'
 import { SyncQueueDatabaseService } from './syncQueueDatabaseService.js'
-import { TodoApiService } from './TodoApiService.js'
+import { TodoApiService } from './todoApiService.js'
 import type { SyncQueueRow } from '@electron/types/syncQueue.types.js'
 import type { TodoRequest } from '@/shared/index.js'
 import type { ApiError } from '@electron/types/apiError.js'
@@ -39,6 +39,46 @@ class SyncService {
     this.todoApiService = todoApiService
     this.maxRetries = options.maxRetries ?? 3
     this.batchSize = options.batchSize ?? 50
+  }
+
+  /**
+   * Orchestrates the sync process with logging and error handling.
+   * This is intended to be called by the scheduler.
+   */
+  async runSync(): Promise<void> {
+    const timestamp = new Date().toLocaleString()
+    console.log('[Sync] Starting sync job at', timestamp)
+
+    try {
+      if (this.isSyncing()) {
+        console.log('[Sync] Previous sync still in progress, skipping...')
+        return
+      }
+
+      const statsBefore = this.getQueueStats()
+      console.log('[Sync] Queue before:', {
+        total: statsBefore.total,
+        pending: statsBefore.pending,
+        failed: statsBefore.failed,
+      })
+
+      const result = await this.processSyncQueue()
+
+      console.log('[Sync] Completed:', {
+        success: result.success,
+        failed: result.failed,
+        errors: result.errors.length > 0 ? result.errors : undefined,
+      })
+
+      const statsAfter = this.getQueueStats()
+      console.log('[Sync] Queue after:', {
+        total: statsAfter.total,
+        pending: statsAfter.pending,
+        failed: statsAfter.failed,
+      })
+    } catch (error) {
+      console.error('[Sync] Error during sync:', error)
+    }
   }
 
   /**
