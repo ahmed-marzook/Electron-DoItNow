@@ -1,7 +1,7 @@
 // Enums for specific fields
 export type SyncActionType = 'CREATE' | 'UPDATE' | 'DELETE'
 export type SyncEntityType = 'todo' | 'habit'
-export type SyncStatus = 'pending' | 'failed' | 'processing'
+export type SyncStatus = 'pending' | 'failed' | 'processing' | 'completed'
 
 // Base type representing the database row
 export interface SyncQueueRow {
