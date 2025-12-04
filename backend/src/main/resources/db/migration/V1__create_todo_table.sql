@@ -3,16 +3,18 @@
 --changeset system:001-create-todo-table
 --comment: Initial schema - Create todos table with indexes
 
-CREATE TABLE IF NOT EXISTS todos (
-    id BIGSERIAL PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    description TEXT,
-    completed BOOLEAN DEFAULT FALSE NOT NULL,
-    priority VARCHAR(20) DEFAULT 'medium' NOT NULL,
-    due_date TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
-);
+CREATE TABLE
+    IF NOT EXISTS todos (
+        id SERIAL PRIMARY KEY,
+        entity_id SERIAL NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        completed BOOLEAN DEFAULT FALSE,
+        priority TEXT DEFAULT 'medium',
+        due_date TIMESTAMPTZ,
+        created_at TIMESTAMPTZ DEFAULT NOW (),
+        updated_at TIMESTAMPTZ DEFAULT NOW ()
+    );
 
 -- Index for common queries
 CREATE INDEX IF NOT EXISTS idx_todos_completed ON todos(completed);
