@@ -9,7 +9,7 @@
   "type": "module",
   "main": "dist-electron/electron/main.js",
   "scripts": {
-    "build": "vite build && tsc --project src/electron/tsconfig.json",
+    "build": "vite build && npm run transpile:electron",
     "build-storybook": "storybook build",
     "check": "prettier --write . && eslint --fix",
     "dev": "npm-run-all --parallel dev:react dev:electron",
@@ -25,7 +25,7 @@
     "serve": "vite preview",
     "storybook": "storybook dev -p 6006",
     "test": "vitest run",
-    "transpile:electron": "tsc --project src/electron/tsconfig.json"
+    "transpile:electron": "tsc --project src/electron/tsconfig.json && tsc-alias -p src/electron/tsconfig.json"
   },
   "dependencies": {
     "@storybook/react-vite": "^9.1.9",
@@ -67,6 +67,7 @@
     "jsdom": "^27.0.0",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.5.3",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.7.2",
     "vite": "^7.1.7",
     "vitest": "^3.0.5",

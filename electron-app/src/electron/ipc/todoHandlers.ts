@@ -1,14 +1,14 @@
 import { ipcMain } from 'electron'
-import { getDatabase } from '../database.js'
-import { TodoDatabaseService } from '../service/todoDatabaseService.js'
+import { getDatabase } from '@electron/database.js'
+import { TodoDatabaseService } from '@electron/service/todoDatabaseService.js'
 import type {
   Todo,
   TodoCreateInput,
   TodoUpdateInput,
 } from '@shared/types/index.js'
-import type { IpcResponse } from './ipc.types.js'
-import { SyncQueueDatabaseService } from '../service/syncQueueDatabaseService.js'
-import { getSyncService } from '../service/SyncService.js'
+import type { IpcResponse } from '@shared/types/ipc.types.js'
+import { SyncQueueDatabaseService } from '@electron/service/syncQueueDatabaseService.js'
+import { getSyncService } from '@electron/service/SyncService.js'
 
 /**
  * List of registered IPC channels for cleanup

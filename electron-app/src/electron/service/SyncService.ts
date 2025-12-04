@@ -1,10 +1,10 @@
 import type { Database } from 'better-sqlite3'
 import { SyncQueueDatabaseService } from './syncQueueDatabaseService.js'
 import { todoApi, TodoApiService } from './todoApiService.js'
-import type { SyncQueueRow } from '../types/syncQueue.types.js'
+import type { SyncQueueRow } from '@electron/types/syncQueue.types.js'
 import type { Todo, TodoRequest } from '@/shared/index.js'
-import type { ApiError } from '../types/apiError.js'
-import { getDatabase } from '../database.js'
+import type { ApiError } from '@electron/types/apiError.js'
+import { getDatabase } from '@electron/database.js'
 
 interface SyncResult {
   success: number

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { ElectronAPI, EventPayloadMapping } from './ipc/ipc.types'
+import { ElectronAPI, EventPayloadMapping } from '../shared/types/ipc.types'
 
 /**
  * Preload script for secure IPC communication

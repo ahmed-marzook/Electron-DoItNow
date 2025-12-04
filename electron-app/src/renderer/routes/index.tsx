@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import type { Todo } from '@shared/types/todo.types'
-import { todoService } from '../services/todoService'
+import { todoService } from '@renderer/services/todoService'
 
 export const Route = createFileRoute('/')({
   component: TodosPage,
