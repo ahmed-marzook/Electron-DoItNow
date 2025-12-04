@@ -3,6 +3,11 @@ import { Link } from '@tanstack/react-router'
 import { useState } from 'react'
 import { BookOpen, Home, Menu, Network, X } from 'lucide-react'
 
+/**
+ * Header component providing application navigation.
+ *
+ * Includes a hamburger menu that opens a sidebar with navigation links.
+ */
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
 

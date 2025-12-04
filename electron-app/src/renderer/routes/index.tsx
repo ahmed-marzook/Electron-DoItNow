@@ -3,10 +3,23 @@ import { useEffect, useState } from 'react'
 import type { Todo } from '@shared/types/todo.types'
 import { todoService } from '../services/todoService'
 
+/**
+ * Route configuration for the root path ('/').
+ * Renders the TodosPage component.
+ */
 export const Route = createFileRoute('/')({
   component: TodosPage,
 })
 
+/**
+ * The main page component for displaying and managing Todos.
+ *
+ * Features:
+ * - Lists all existing todos.
+ * - Form to create new todos.
+ * - Inline editing of existing todos.
+ * - Deletion and completion toggling.
+ */
 function TodosPage() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [loading, setLoading] = useState(true)
@@ -30,6 +43,9 @@ function TodosPage() {
     loadTodos()
   }, [])
 
+  /**
+   * Fetches all todos from the service and updates state.
+   */
   const loadTodos = async () => {
     try {
       setLoading(true)
@@ -43,6 +59,12 @@ function TodosPage() {
     }
   }
 
+  /**
+   * Formats a date string into a readable format.
+   *
+   * @param {string} dateString The date string to format.
+   * @returns {string} The formatted date string.
+   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -53,6 +75,12 @@ function TodosPage() {
     })
   }
 
+  /**
+   * Returns the Tailwind CSS classes for a given priority level.
+   *
+   * @param {string} priority The priority level ('low', 'medium', 'high').
+   * @returns {string} The CSS class string.
+   */
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'high':
@@ -82,6 +110,12 @@ function TodosPage() {
     )
   }
 
+  /**
+   * Toggles the completion status of a todo.
+   * Optimistically updates the UI before calling the service.
+   *
+   * @param {Todo} todo The todo item to toggle.
+   */
   const toggleTodoCompletion = async (todo: Todo) => {
     try {
       const newCompletedStatus = todo.completed === 1 ? 0 : 1
@@ -114,6 +148,9 @@ function TodosPage() {
     }
   }
 
+  /**
+   * Creates a new todo based on form input.
+   */
   const createTodo = async () => {
     if (!newTodo.title.trim()) {
       setError('Title is required')
@@ -143,6 +180,11 @@ function TodosPage() {
     }
   }
 
+  /**
+   * Deletes a todo by ID.
+   *
+   * @param {number} id The ID of the todo to delete.
+   */
   const deleteTodo = async (id: number) => {
     try {
       setError(null)
@@ -153,6 +195,11 @@ function TodosPage() {
     }
   }
 
+  /**
+   * Prepares the form for editing an existing todo.
+   *
+   * @param {Todo} todo The todo to edit.
+   */
   const startEditingTodo = (todo: Todo) => {
     setEditingTodoId(todo.id)
     setEditTodo({
@@ -164,6 +211,9 @@ function TodosPage() {
     setShowCreateForm(false)
   }
 
+  /**
+   * Cancels the editing mode.
+   */
   const cancelEditing = () => {
     setEditingTodoId(null)
     setEditTodo({
@@ -174,6 +224,11 @@ function TodosPage() {
     })
   }
 
+  /**
+   * Saves the changes made to a todo in edit mode.
+   *
+   * @param {number} id The ID of the todo being updated.
+   */
   const updateTodo = async (id: number) => {
     if (!editTodo.title.trim()) {
       setError('Title is required')

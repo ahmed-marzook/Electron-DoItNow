@@ -4,9 +4,12 @@ import { isDev } from './util.js'
 import fs from 'node:fs'
 
 /**
- * Get the database file path based on environment
- * Development: Store in project root
- * Production: Store in user data directory
+ * Get the database file path based on environment.
+ *
+ * In development mode, the database is stored in the project root.
+ * In production mode, it is stored in the application's user data directory.
+ *
+ * @returns {string} The full path to the SQLite database file.
  */
 export function getDatabasePath(): string {
   if (isDev()) {
@@ -26,26 +29,35 @@ export function getDatabasePath(): string {
 }
 
 /**
- * Get the preload script path
- * Works in both development and production/packaged environments
+ * Get the preload script path.
+ *
+ * This path is used by the BrowserWindow webPreferences to load the preload script.
+ *
+ * @returns {string} The full path to the preload script.
  */
-export function getPreloadPath() {
+export function getPreloadPath(): string {
   return path.join(app.getAppPath(), 'dist-electron/electron/preload.cjs')
 }
 
 /**
- * Get the UI HTML file path
- * Works in both development and production/packaged environments
+ * Get the UI HTML file path.
+ *
+ * This path is used to load the React application in production mode.
+ *
+ * @returns {string} The full path to the index.html file.
  */
-export function getUIPath() {
+export function getUIPath(): string {
   return path.join(app.getAppPath(), 'dist-react/index.html')
 }
 
 /**
- * Get the asset directory path
- * Note: In production, assets are bundled in dist-react, not src/assets
+ * Get the asset directory path.
+ *
+ * Helper to locate static assets depending on the environment.
+ *
+ * @returns {string} The full path to the assets directory.
  */
-export function getAssetPath() {
+export function getAssetPath(): string {
   if (isDev()) {
     return path.join(app.getAppPath(), 'src/renderer/assets')
   } else {

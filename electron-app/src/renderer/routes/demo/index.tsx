@@ -1,9 +1,15 @@
 import { createFileRoute } from '@tanstack/react-router'
 
+/**
+ * Route configuration for the demo page.
+ */
 export const Route = createFileRoute('/demo/')({
   component: App,
 })
 
+/**
+ * A demo page component displaying a placeholder message.
+ */
 function App() {
   return (
     <div

@@ -12,6 +12,11 @@ import { ElectronAPI, EventPayloadMapping } from './ipc/ipc.types'
 /**
  * Helper function for request/response IPC with parameters (invoke)
  * Used for: CRUD operations, fetching data
+ *
+ * @template Key The event key from EventPayloadMapping
+ * @param {Key} key The IPC channel to invoke
+ * @param {...any[]} args Arguments to pass to the main process
+ * @returns {Promise<EventPayloadMapping[Key]>} The response from the main process
  */
 function ipcInvoke<Key extends keyof EventPayloadMapping>(
   key: Key,
@@ -24,6 +29,11 @@ function ipcInvoke<Key extends keyof EventPayloadMapping>(
  * Helper function for subscribing to events (on)
  * Used for: Real-time updates, notifications from main process
  * Returns cleanup function to unsubscribe
+ *
+ * @template Key The event key from EventPayloadMapping
+ * @param {Key} key The IPC channel to listen to
+ * @param {(payload: EventPayloadMapping[Key]) => void} callback The callback to execute when the event fires
+ * @returns {() => void} A function to unsubscribe the listener
  */
 function ipcOn<Key extends keyof EventPayloadMapping>(
   key: Key,
@@ -37,6 +47,10 @@ function ipcOn<Key extends keyof EventPayloadMapping>(
 /**
  * Helper function for fire-and-forget IPC (send)
  * Used for: Commands, actions that don't need a response
+ *
+ * @template Key The event key from EventPayloadMapping
+ * @param {Key} key The IPC channel to send to
+ * @param {EventPayloadMapping[Key]} payload The data to send
  */
 function ipcSend<Key extends keyof EventPayloadMapping>(
   key: Key,

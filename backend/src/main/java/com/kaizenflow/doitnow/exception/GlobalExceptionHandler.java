@@ -12,9 +12,22 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Global exception handler for the application.
+ * <p>
+ * Intercepts exceptions thrown by controllers and translates them into standard error responses.
+ * </p>
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Handles {@link TodoNotFoundException}.
+     *
+     * @param ex      The exception that was thrown.
+     * @param request The current web request.
+     * @return A {@link ResponseEntity} containing the {@link ErrorResponse} with status 404 Not Found.
+     */
     @ExceptionHandler(TodoNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleTodoNotFoundException(
             TodoNotFoundException ex,
@@ -31,6 +44,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * Handles {@link MethodArgumentNotValidException} thrown when validation fails.
+     *
+     * @param ex      The exception containing validation errors.
+     * @param request The current web request.
+     * @return A {@link ResponseEntity} containing a map of field errors with status 400 Bad Request.
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, Object>> handleValidationExceptions(
             MethodArgumentNotValidException ex,
@@ -53,6 +73,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Handles all other unhandled exceptions.
+     *
+     * @param ex      The exception that was thrown.
+     * @param request The current web request.
+     * @return A {@link ResponseEntity} containing the {@link ErrorResponse} with status 500 Internal Server Error.
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(
             Exception ex,

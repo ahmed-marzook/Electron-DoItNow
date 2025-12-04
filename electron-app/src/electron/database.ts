@@ -131,8 +131,9 @@ function seedDatabase() {
 /**
  * Initialize the database
  * Must be called after app.whenReady()
+ * @returns {Database.Database} The initialized database instance
  */
-export function initDatabase() {
+export function initDatabase(): Database.Database {
   const dbPath = getDatabasePath()
   console.log('Database location:', dbPath)
 
@@ -168,6 +169,8 @@ export function initDatabase() {
 
 /**
  * Get the database instance
+ * @returns {Database.Database} The active database instance
+ * @throws {Error} If the database has not been initialized
  */
 export function getDatabase(): Database.Database {
   if (!db) {
@@ -178,8 +181,9 @@ export function getDatabase(): Database.Database {
 
 /**
  * Close the database connection
+ * Performs cleanup and ensures the WAL file is checkpointed
  */
-export function closeDatabase() {
+export function closeDatabase(): void {
   try {
     // If you want to be extra safe and use better-sqlite3's flag:
     if (!db || !(db as any).open) {

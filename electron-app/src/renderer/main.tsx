@@ -15,8 +15,17 @@ import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
 
 // Create a new router instance
-
+/**
+ * Context for TanStack Query, extracted to share with the router.
+ */
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()
+
+/**
+ * The main application router instance.
+ *
+ * Configured with hash history for Electron compatibility.
+ * Includes context for TanStack Query integration.
+ */
 const router = createRouter({
   routeTree,
   context: {

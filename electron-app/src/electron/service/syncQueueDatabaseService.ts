@@ -14,6 +14,11 @@ import {
 class SyncQueueDatabaseService {
   private db: Database
 
+  /**
+   * Constructs a new SyncQueueDatabaseService.
+   *
+   * @param {Database} database The initialized better-sqlite3 database instance.
+   */
   constructor(database: Database) {
     this.db = database
   }
@@ -21,6 +26,13 @@ class SyncQueueDatabaseService {
   /**
    * Queue an entity action for sync (simplified helper)
    * Automatically generates ID and timestamp
+   *
+   * @template T The type of the payload
+   * @param {SyncActionType} actionType The type of action (CREATE, UPDATE, DELETE)
+   * @param {SyncEntityType} entityType The type of entity (todo, habit)
+   * @param {string} entityId The ID of the entity
+   * @param {T} payload The data associated with the action
+   * @returns {SyncQueueRow} The created sync queue record
    */
   queueAction<T = any>(
     actionType: SyncActionType,
@@ -41,7 +53,13 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Queue a create action
+   * Queue a create action.
+   *
+   * @template T The type of the payload
+   * @param {SyncEntityType} entityType The type of entity
+   * @param {string} entityId The ID of the entity
+   * @param {T} payload The data for the created entity
+   * @returns {SyncQueueRow} The created sync queue record
    */
   queueCreate<T = any>(
     entityType: SyncEntityType,
@@ -52,7 +70,13 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Queue an update action
+   * Queue an update action.
+   *
+   * @template T The type of the payload
+   * @param {SyncEntityType} entityType The type of entity
+   * @param {string} entityId The ID of the entity
+   * @param {T} payload The data for the updated entity
+   * @returns {SyncQueueRow} The created sync queue record
    */
   queueUpdate<T = any>(
     entityType: SyncEntityType,
@@ -63,7 +87,13 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Queue a delete action
+   * Queue a delete action.
+   *
+   * @template T The type of the payload
+   * @param {SyncEntityType} entityType The type of entity
+   * @param {string} entityId The ID of the entity
+   * @param {T} payload The data associated with the deletion (e.g., just the ID)
+   * @returns {SyncQueueRow} The created sync queue record
    */
   queueDelete<T = any>(
     entityType: SyncEntityType,
@@ -74,7 +104,10 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Insert a new item into the sync queue
+   * Insert a new item into the sync queue.
+   *
+   * @param {SyncQueueInsert} item The item to insert
+   * @returns {SyncQueueRow} The inserted item
    */
   insert(item: SyncQueueInsert): SyncQueueRow {
     const stmt = this.db.prepare(`
@@ -105,7 +138,10 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Get a single item by ID
+   * Get a single item by ID.
+   *
+   * @param {string} id The ID of the sync queue item
+   * @returns {SyncQueueRow | undefined} The item if found, undefined otherwise
    */
   getById(id: string): SyncQueueRow | undefined {
     const stmt = this.db.prepare('SELECT * FROM sync_queue WHERE id = ?')
@@ -113,7 +149,9 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Get all items
+   * Get all items.
+   *
+   * @returns {SyncQueueRow[]} All items in the sync queue, ordered by creation date
    */
   getAll(): SyncQueueRow[] {
     const stmt = this.db.prepare(
@@ -123,7 +161,12 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Update item status
+   * Update item status.
+   *
+   * @param {string} id The ID of the item
+   * @param {SyncStatus} status The new status
+   * @param {string | null} [errorMessage] Optional error message
+   * @returns {boolean} True if the update was successful
    */
   updateStatus(
     id: string,
@@ -141,14 +184,22 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Mark item as processing
+   * Mark item as processing.
+   *
+   * @param {string} id The ID of the item
+   * @returns {boolean} True if successful
    */
   markAsProcessing(id: string): boolean {
     return this.updateStatus(id, 'processing')
   }
 
   /**
-   * Mark item as failed with error message
+   * Mark item as failed with error message.
+   * Increments retry count and updates last attempt timestamp.
+   *
+   * @param {string} id The ID of the item
+   * @param {string} errorMessage The error message
+   * @returns {boolean} True if successful
    */
   markAsFailed(id: string, errorMessage: string): boolean {
     const stmt = this.db.prepare(`
@@ -165,7 +216,10 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Increment retry count
+   * Increment retry count.
+   *
+   * @param {string} id The ID of the item
+   * @returns {boolean} True if successful
    */
   incrementRetryCount(id: string): boolean {
     const stmt = this.db.prepare(`
@@ -179,14 +233,20 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Reset item to pending (for retry)
+   * Reset item to pending (for retry).
+   *
+   * @param {string} id The ID of the item
+   * @returns {boolean} True if successful
    */
   resetToPending(id: string): boolean {
     return this.updateStatus(id, 'pending', null)
   }
 
   /**
-   * Delete a single item by ID
+   * Delete a single item by ID.
+   *
+   * @param {string} id The ID of the item to delete
+   * @returns {boolean} True if successful
    */
   deleteById(id: string): boolean {
     const stmt = this.db.prepare('DELETE FROM sync_queue WHERE id = ?')
@@ -195,7 +255,10 @@ class SyncQueueDatabaseService {
   }
 
   /**
-   * Delete items by status
+   * Delete items by status.
+   *
+   * @param {SyncStatus} status The status of items to delete
+   * @returns {number} The number of deleted items
    */
   deleteByStatus(status: SyncStatus): number {
     const stmt = this.db.prepare('DELETE FROM sync_queue WHERE status = ?')

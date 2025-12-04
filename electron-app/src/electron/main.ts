@@ -8,7 +8,13 @@ import {
 } from './ipc/todoHandlers.js'
 import { getPreloadPath, getUIPath } from './pathResolver.js'
 
-function createWindow() {
+/**
+ * Creates the main application window.
+ *
+ * Configures the window dimensions, web preferences (including preload script),
+ * and loads the appropriate URL (dev server) or file (production build).
+ */
+function createWindow(): void {
   const win = new BrowserWindow({
     width: 800,
     height: 600,

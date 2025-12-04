@@ -1,10 +1,19 @@
 import type { TodoRequest, TodoResponse } from '@/shared/index.js'
 import { ApiError } from '@electron/types/apiError.js'
 
+/**
+ * Service to interact with the backend API for Todo operations.
+ */
 class TodoApiService {
   private baseUrl: string
   private timeout: number
 
+  /**
+   * Constructs a new TodoApiService.
+   *
+   * @param {string} baseUrl The base URL of the API. Defaults to 'http://localhost:8080'.
+   * @param {number} timeout The request timeout in milliseconds. Defaults to 10000ms.
+   */
   constructor(
     baseUrl: string = 'http://localhost:8080',
     timeout: number = 10000,
@@ -14,7 +23,13 @@ class TodoApiService {
   }
 
   /**
-   * Generic fetch wrapper with error handling and timeout
+   * Generic fetch wrapper with error handling and timeout.
+   *
+   * @template T The expected return type.
+   * @param {string} url The URL to fetch.
+   * @param {RequestInit} [options={}] The fetch options.
+   * @returns {Promise<T>} A promise resolving to the response data.
+   * @throws {ApiError} If the request fails, times out, or returns a non-success status.
    */
   private async fetchWithTimeout<T>(
     url: string,
@@ -90,7 +105,12 @@ class TodoApiService {
 
   /**
    * GET /api/todos
-   * Get all todos with optional filters
+   * Get all todos with optional filters.
+   *
+   * @param {Object} [params] Optional query parameters.
+   * @param {boolean} [params.completed] Filter by completion status.
+   * @param {string} [params.priority] Filter by priority.
+   * @returns {Promise<TodoResponse[]>} A list of todos matching the criteria.
    */
   async getAllTodos(params?: {
     completed?: boolean
@@ -115,7 +135,10 @@ class TodoApiService {
 
   /**
    * GET /api/todos/{id}
-   * Get a single todo by ID
+   * Get a single todo by ID.
+   *
+   * @param {number} id The ID of the todo.
+   * @returns {Promise<TodoResponse>} The requested todo.
    */
   async getTodoById(id: number): Promise<TodoResponse> {
     return this.fetchWithTimeout<TodoResponse>(
@@ -126,7 +149,10 @@ class TodoApiService {
 
   /**
    * POST /api/todos
-   * Create a new todo
+   * Create a new todo.
+   *
+   * @param {TodoRequest} todo The data for the new todo.
+   * @returns {Promise<TodoResponse>} The created todo.
    */
   async createTodo(todo: TodoRequest): Promise<TodoResponse> {
     return this.fetchWithTimeout<TodoResponse>(`${this.baseUrl}/api/todos`, {
@@ -137,7 +163,11 @@ class TodoApiService {
 
   /**
    * PUT /api/todos/{id}
-   * Update an existing todo
+   * Update an existing todo.
+   *
+   * @param {number} id The ID of the todo to update.
+   * @param {TodoRequest} todo The new data for the todo.
+   * @returns {Promise<TodoResponse>} The updated todo.
    */
   async updateTodo(id: number, todo: TodoRequest): Promise<TodoResponse> {
     return this.fetchWithTimeout<TodoResponse>(
@@ -151,7 +181,10 @@ class TodoApiService {
 
   /**
    * DELETE /api/todos/{id}
-   * Delete a todo
+   * Delete a todo.
+   *
+   * @param {number} id The ID of the todo to delete.
+   * @returns {Promise<void>} A promise that resolves when deletion is complete.
    */
   async deleteTodo(id: number): Promise<void> {
     return this.fetchWithTimeout<void>(`${this.baseUrl}/api/todos/${id}`, {
@@ -161,7 +194,10 @@ class TodoApiService {
 
   /**
    * PATCH /api/todos/{id}/toggle
-   * Toggle todo completed status
+   * Toggle todo completed status.
+   *
+   * @param {number} id The ID of the todo.
+   * @returns {Promise<TodoResponse>} The updated todo.
    */
   async toggleTodoCompleted(id: number): Promise<TodoResponse> {
     return this.fetchWithTimeout<TodoResponse>(
@@ -172,7 +208,11 @@ class TodoApiService {
 
   /**
    * GET /api/todos/due-date
-   * Get todos by due date range
+   * Get todos by due date range.
+   *
+   * @param {Date} start The start date.
+   * @param {Date} end The end date.
+   * @returns {Promise<TodoResponse[]>} List of todos within the date range.
    */
   async getTodosByDueDateRange(
     start: Date,
@@ -190,7 +230,9 @@ class TodoApiService {
   }
 
   /**
-   * Check if API is reachable
+   * Check if API is reachable.
+   *
+   * @returns {Promise<boolean>} True if the API is reachable, false otherwise.
    */
   async healthCheck(): Promise<boolean> {
     try {

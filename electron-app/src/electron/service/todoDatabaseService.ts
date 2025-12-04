@@ -12,13 +12,18 @@ import type {
 class TodoDatabaseService {
   private db: Database
 
+  /**
+   * Constructs a new TodoDatabaseService.
+   *
+   * @param {Database} database The initialized better-sqlite3 database instance.
+   */
   constructor(database: Database) {
     this.db = database
   }
 
   /**
    * Get all todos from the database
-   * @returns Array of todos ordered by creation date (newest first)
+   * @returns {Todo[]} Array of todos ordered by creation date (newest first)
    */
   getAllTodos(): Todo[] {
     const todos = this.db
@@ -29,8 +34,8 @@ class TodoDatabaseService {
 
   /**
    * Get a single todo by ID
-   * @param id - The todo ID
-   * @returns The todo if found, undefined otherwise
+   * @param {number} id - The todo ID
+   * @returns {Todo | undefined} The todo if found, undefined otherwise
    */
   getTodoById(id: number): Todo | undefined {
     const todo = this.db
@@ -41,8 +46,8 @@ class TodoDatabaseService {
 
   /**
    * Create a new todo in the database
-   * @param todoData - The todo data to insert
-   * @returns The newly created todo with its assigned ID
+   * @param {TodoCreateInput} todoData - The todo data to insert
+   * @returns {Todo} The newly created todo with its assigned ID
    */
   createTodo(todoData: TodoCreateInput): Todo {
     const stmt = this.db.prepare(`
@@ -61,9 +66,9 @@ class TodoDatabaseService {
 
   /**
    * Update an existing todo
-   * @param id - The todo ID to update
-   * @param todoData - The updated todo data
-   * @returns The updated todo if successful, undefined if todo not found
+   * @param {number} id - The todo ID to update
+   * @param {TodoUpdateInput} todoData - The updated todo data
+   * @returns {Todo | undefined} The updated todo if successful, undefined if todo not found
    */
   updateTodo(id: number, todoData: TodoUpdateInput): Todo | undefined {
     const stmt = this.db.prepare(`
@@ -93,8 +98,8 @@ class TodoDatabaseService {
 
   /**
    * Delete a todo by ID
-   * @param id - The todo ID to delete
-   * @returns True if the todo was deleted, false if not found
+   * @param {number} id - The todo ID to delete
+   * @returns {boolean} True if the todo was deleted, false if not found
    */
   deleteTodo(id: number): boolean {
     const stmt = this.db.prepare('DELETE FROM todos WHERE id = ?')
