@@ -336,10 +336,28 @@ class SyncService {
   }
 }
 
-export const syncService = new SyncService(getDatabase(), todoApi, {
-  maxRetries: 3,
-  batchSize: 50,
-})
+// Lazy initialization to avoid calling getDatabase() at module load time
+let _syncService: SyncService | null = null
+
+export function getSyncService(): SyncService {
+  if (!_syncService) {
+    _syncService = new SyncService(getDatabase(), todoApi, {
+      maxRetries: 3,
+      batchSize: 50,
+    })
+  }
+  return _syncService
+}
+
+// For backward compatibility, export as syncService
+export const syncService = {
+  runSync: () => getSyncService().runSync(),
+  processSyncQueue: () => getSyncService().processSyncQueue(),
+  syncSingleItem: (itemId: string) => getSyncService().syncSingleItem(itemId),
+  clearCompletedItems: () => getSyncService().clearCompletedItems(),
+  getQueueStats: () => getSyncService().getQueueStats(),
+  isSyncing: () => getSyncService().isSyncing(),
+}
 
 export { SyncService }
 export type { SyncResult, SyncOptions }
