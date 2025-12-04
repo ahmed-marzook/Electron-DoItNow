@@ -8,7 +8,7 @@ import {
 } from './ipc/todoHandlers.js'
 import { getPreloadPath, getUIPath } from './pathResolver.js'
 import { CronJob } from 'cron'
-import { SyncService } from './service/SyncService.js'
+import { syncService, SyncService } from './service/SyncService.js'
 import { todoApi } from './service/todoApiService.js'
 
 let syncJob: CronJob | null = null
@@ -32,12 +32,7 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
-  const db = initDatabase()
-
-  const syncService = new SyncService(db, todoApi, {
-    maxRetries: 3,
-    batchSize: 50,
-  })
+  initDatabase()
 
   // Run immediately on startup
   console.log('[Sync] Running initial sync on startup...')

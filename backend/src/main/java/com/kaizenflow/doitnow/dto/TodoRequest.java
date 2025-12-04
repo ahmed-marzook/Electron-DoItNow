@@ -25,4 +25,6 @@ public class TodoRequest {
     private String priority = "medium";
 
     private OffsetDateTime dueDate;
+
+    private OffsetDateTime createdAt;
 }

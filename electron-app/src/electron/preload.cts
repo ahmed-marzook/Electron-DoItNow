@@ -54,6 +54,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     create: (todoData) => ipcInvoke('todo:create', todoData),
     update: (id: number, todoData) => ipcInvoke('todo:update', id, todoData),
     delete: (id: number) => ipcInvoke('todo:delete', id),
+    manualSync: () => ipcInvoke('sync:manual'),
 
     // Event subscriptions (on)
     onTodoAdded: (callback) => ipcOn('todo:added', callback),

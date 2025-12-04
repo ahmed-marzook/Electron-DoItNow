@@ -8,7 +8,7 @@ import type {
 } from '@shared/types/index.js'
 import type { IpcResponse } from './ipc.types.js'
 import { SyncQueueDatabaseService } from '../service/syncQueueDatabaseService.js'
-import { SyncQueueInsert } from '../types/syncQueue.types.js'
+import { syncService } from '../service/SyncService.js'
 
 /**
  * List of registered IPC channels for cleanup
@@ -124,6 +124,19 @@ export function registerTodoHandlers() {
       return { success: true }
     } catch (error) {
       console.error('Error deleting todo:', error)
+      return { success: false, error: (error as Error).message }
+    }
+  })
+
+  /**
+   * Manually trigger sync
+   */
+  ipcMain.handle('sync:manual', async (): Promise<IpcResponse<void>> => {
+    try {
+      await syncService.runSync()
+      return { success: true }
+    } catch (error) {
+      console.error('Error running manual sync:', error)
       return { success: false, error: (error as Error).message }
     }
   })

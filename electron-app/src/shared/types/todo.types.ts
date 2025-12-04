@@ -50,6 +50,7 @@ export interface TodoRequest {
   completed?: boolean
   priority?: 'low' | 'medium' | 'high'
   dueDate?: string // ISO 8601 format
+  createdAt?: string
 }
 
 export interface TodoResponse {

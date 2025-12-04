@@ -28,6 +28,7 @@ export interface EventPayloadMapping {
   'todo:create': IpcResponse<Todo>
   'todo:update': IpcResponse<Todo>
   'todo:delete': IpcResponse<void>
+  'sync:manual': IpcResponse<void>
 
   // Todo events (one-way)
   'todo:added': Todo
@@ -50,6 +51,7 @@ export interface ElectronAPI {
       todoData: TodoUpdateInput,
     ) => Promise<IpcResponse<Todo>>
     delete: (id: number) => Promise<IpcResponse<void>>
+    manualSync: () => Promise<IpcResponse<void>>
 
     onTodoAdded: (callback: (todo: Todo) => void) => UnsubscribeFunction
     onTodoUpdated: (callback: (todo: Todo) => void) => UnsubscribeFunction

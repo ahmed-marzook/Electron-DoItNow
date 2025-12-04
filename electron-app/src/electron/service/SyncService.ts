@@ -1,9 +1,10 @@
 import type { Database } from 'better-sqlite3'
 import { SyncQueueDatabaseService } from './syncQueueDatabaseService.js'
-import { TodoApiService } from './todoApiService.js'
-import type { SyncQueueRow } from '@electron/types/syncQueue.types.js'
-import type { TodoRequest } from '@/shared/index.js'
-import type { ApiError } from '@electron/types/apiError.js'
+import { todoApi, TodoApiService } from './todoApiService.js'
+import type { SyncQueueRow } from '../types/syncQueue.types.js'
+import type { Todo, TodoRequest } from '@/shared/index.js'
+import type { ApiError } from '../types/apiError.js'
+import { getDatabase } from '../database.js'
 
 interface SyncResult {
   success: number
@@ -159,8 +160,16 @@ class SyncService {
 
     try {
       // Parse payload
-      const payload = JSON.parse(item.payload) as TodoRequest
-      payload.entityId = Number(item.entity_id)
+      const parsePayload = JSON.parse(item.payload) as Todo
+      const payload = {
+        entityId: parsePayload.id,
+        title: parsePayload.title,
+        description: parsePayload.description,
+        completed: parsePayload.completed === 1,
+        priority: parsePayload.priority,
+        dueDate: parsePayload.due_date,
+        createdAt: String(item.created_at),
+      } as TodoRequest
 
       // Call appropriate API endpoint based on action type
       switch (item.action_type) {
@@ -326,6 +335,11 @@ class SyncService {
     return this.isProcessing
   }
 }
+
+export const syncService = new SyncService(getDatabase(), todoApi, {
+  maxRetries: 3,
+  batchSize: 50,
+})
 
 export { SyncService }
 export type { SyncResult, SyncOptions }
