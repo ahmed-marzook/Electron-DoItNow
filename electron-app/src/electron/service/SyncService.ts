@@ -349,15 +349,5 @@ export function getSyncService(): SyncService {
   return _syncService
 }
 
-// For backward compatibility, export as syncService
-export const syncService = {
-  runSync: () => getSyncService().runSync(),
-  processSyncQueue: () => getSyncService().processSyncQueue(),
-  syncSingleItem: (itemId: string) => getSyncService().syncSingleItem(itemId),
-  clearCompletedItems: () => getSyncService().clearCompletedItems(),
-  getQueueStats: () => getSyncService().getQueueStats(),
-  isSyncing: () => getSyncService().isSyncing(),
-}
-
 export { SyncService }
 export type { SyncResult, SyncOptions }

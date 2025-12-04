@@ -8,7 +8,7 @@ import type {
 } from '@shared/types/index.js'
 import type { IpcResponse } from './ipc.types.js'
 import { SyncQueueDatabaseService } from '../service/syncQueueDatabaseService.js'
-import { syncService } from '../service/SyncService.js'
+import { getSyncService } from '../service/SyncService.js'
 
 /**
  * List of registered IPC channels for cleanup
@@ -133,7 +133,7 @@ export function registerTodoHandlers() {
    */
   ipcMain.handle('sync:manual', async (): Promise<IpcResponse<void>> => {
     try {
-      await syncService.runSync()
+      await getSyncService().runSync()
       return { success: true }
     } catch (error) {
       console.error('Error running manual sync:', error)
