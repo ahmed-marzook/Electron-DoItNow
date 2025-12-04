@@ -10,7 +10,7 @@ description = 'To Do app for electron with cloud sync'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
+		languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
