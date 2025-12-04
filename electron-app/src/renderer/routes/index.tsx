@@ -205,6 +205,10 @@ function TodosPage() {
     }
   }
 
+  const manualSync = async () => {
+    window.electronAPI.todo.manualSync()
+  }
+
   return (
     <div
       className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 p-4 text-white"
@@ -233,6 +237,12 @@ function TodosPage() {
               className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-colors"
             >
               Refresh
+            </button>
+            <button
+              onClick={manualSync}
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+            >
+              Sync Cloud
             </button>
           </div>
         </div>
@@ -397,7 +407,10 @@ function TodosPage() {
                           type="date"
                           value={editTodo.due_date}
                           onChange={(e) =>
-                            setEditTodo({ ...editTodo, due_date: e.target.value })
+                            setEditTodo({
+                              ...editTodo,
+                              due_date: e.target.value,
+                            })
                           }
                           className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="Select a due date"
