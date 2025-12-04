@@ -31,8 +31,7 @@ function createWindow() {
   }
 }
 
-app.whenReady().then(() => {
-  // Initialize database (creates tables and seeds data)
+app.whenReady().then(async () => {
   const db = initDatabase()
 
   const syncService = new SyncService(db, todoApi, {
@@ -40,54 +39,49 @@ app.whenReady().then(() => {
     batchSize: 50,
   })
 
-  // Create cron job for syncing every minute
-  syncJob = new CronJob(
-    '* * * * *', // cronTime (every minute)
-    async function () {
-      const timestamp = new Date().toLocaleString()
-      console.log('[Sync] Starting sync job at', timestamp)
+  // Define the sync function
+  const runSync = async () => {
+    const timestamp = new Date().toLocaleString()
+    console.log('[Sync] Starting sync job at', timestamp)
 
-      try {
-        // Check if already syncing
-        if (syncService.isSyncing()) {
-          console.log('[Sync] Previous sync still in progress, skipping...')
-          return
-        }
-
-        // Get queue stats before sync
-        const statsBefore = syncService.getQueueStats()
-        console.log('[Sync] Queue before:', {
-          total: statsBefore.total,
-          pending: statsBefore.pending,
-          failed: statsBefore.failed,
-        })
-
-        // Process the sync queue
-        const result = await syncService.processSyncQueue()
-
-        // Log results
-        console.log('[Sync] Completed:', {
-          success: result.success,
-          failed: result.failed,
-          errors: result.errors.length > 0 ? result.errors : undefined,
-        })
-
-        // Get queue stats after sync
-        const statsAfter = syncService.getQueueStats()
-        console.log('[Sync] Queue after:', {
-          total: statsAfter.total,
-          pending: statsAfter.pending,
-          failed: statsAfter.failed,
-        })
-      } catch (error) {
-        console.error('[Sync] Error during sync:', error)
-        // Continue running - don't let one failure break the cron
+    try {
+      if (syncService.isSyncing()) {
+        console.log('[Sync] Previous sync still in progress, skipping...')
+        return
       }
-    },
-    null, // onComplete
-    true, // start immediately
-    'America/New_York', // timezone (optional)
-  )
+
+      const statsBefore = syncService.getQueueStats()
+      console.log('[Sync] Queue before:', {
+        total: statsBefore.total,
+        pending: statsBefore.pending,
+        failed: statsBefore.failed,
+      })
+
+      const result = await syncService.processSyncQueue()
+
+      console.log('[Sync] Completed:', {
+        success: result.success,
+        failed: result.failed,
+        errors: result.errors.length > 0 ? result.errors : undefined,
+      })
+
+      const statsAfter = syncService.getQueueStats()
+      console.log('[Sync] Queue after:', {
+        total: statsAfter.total,
+        pending: statsAfter.pending,
+        failed: statsAfter.failed,
+      })
+    } catch (error) {
+      console.error('[Sync] Error during sync:', error)
+    }
+  }
+
+  // Run immediately on startup
+  console.log('[Sync] Running initial sync on startup...')
+  await runSync()
+
+  // Create cron job with the same function
+  syncJob = new CronJob('* * * * *', runSync, null, true, 'America/New_York')
 
   console.log('[Sync] Cron job started - will run every minute')
 

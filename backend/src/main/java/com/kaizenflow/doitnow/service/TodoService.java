@@ -28,7 +28,7 @@ public class TodoService {
 
     @Transactional(readOnly = true)
     public TodoResponse getTodoById(Long id) {
-        Todo todo = todoRepository.findById(id)
+        Todo todo = todoRepository.findByEntityId(id)
                 .orElseThrow(() -> new TodoNotFoundException(id));
         return TodoResponse.fromEntity(todo);
     }
@@ -57,6 +57,7 @@ public class TodoService {
     @Transactional
     public TodoResponse createTodo(TodoRequest request) {
         Todo todo = new Todo();
+        todo.setEntityId(request.getEntityId());
         todo.setTitle(request.getTitle());
         todo.setDescription(request.getDescription());
         todo.setCompleted(request.getCompleted() != null ? request.getCompleted() : false);
@@ -69,7 +70,7 @@ public class TodoService {
 
     @Transactional
     public TodoResponse updateTodo(Long id, TodoRequest request) {
-        Todo todo = todoRepository.findById(id)
+        Todo todo = todoRepository.findByEntityId(request.getEntityId())
                 .orElseThrow(() -> new TodoNotFoundException(id));
 
         todo.setTitle(request.getTitle());
@@ -84,7 +85,7 @@ public class TodoService {
 
     @Transactional
     public TodoResponse toggleTodoCompleted(Long id) {
-        Todo todo = todoRepository.findById(id)
+        Todo todo = todoRepository.findByEntityId(id)
                 .orElseThrow(() -> new TodoNotFoundException(id));
 
         todo.setCompleted(!todo.getCompleted());
@@ -94,9 +95,8 @@ public class TodoService {
 
     @Transactional
     public void deleteTodo(Long id) {
-        if (!todoRepository.existsById(id)) {
-            throw new TodoNotFoundException(id);
-        }
+        todoRepository.findByEntityId(id)
+                .orElseThrow(() -> new TodoNotFoundException(id));
         todoRepository.deleteById(id);
     }
 }

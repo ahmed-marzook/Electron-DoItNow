@@ -1,6 +1,7 @@
 CREATE TABLE
     IF NOT EXISTS todos (
         id SERIAL PRIMARY KEY,
+        entity_Id SERIAL NOT NULL,
         title TEXT NOT NULL,
         description TEXT,
         completed BOOLEAN DEFAULT FALSE,

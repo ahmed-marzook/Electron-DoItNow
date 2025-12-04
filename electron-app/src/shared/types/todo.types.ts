@@ -44,6 +44,7 @@ export interface TodoUpdateInput {
 }
 
 export interface TodoRequest {
+  entityId: number
   title: string
   description?: string
   completed?: boolean

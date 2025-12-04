@@ -120,6 +120,7 @@ class SyncService {
     try {
       // Parse payload
       const payload = JSON.parse(item.payload) as TodoRequest
+      payload.entityId = Number(item.entity_id)
 
       // Call appropriate API endpoint based on action type
       switch (item.action_type) {
