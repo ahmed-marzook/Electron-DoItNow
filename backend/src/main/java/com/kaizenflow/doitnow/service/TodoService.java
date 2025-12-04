@@ -4,6 +4,7 @@ import com.kaizenflow.doitnow.dto.TodoRequest;
 import com.kaizenflow.doitnow.dto.TodoResponse;
 import com.kaizenflow.doitnow.entity.Todo;
 import com.kaizenflow.doitnow.exception.TodoNotFoundException;
+import com.kaizenflow.doitnow.mapper.TodoMapper;
 import com.kaizenflow.doitnow.repository.TodoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,12 @@ import java.util.stream.Collectors;
 public class TodoService {
 
     private final TodoRepository todoRepository;
+    private final TodoMapper todoMapper;
 
     @Transactional(readOnly = true)
     public List<TodoResponse> getAllTodos() {
         return todoRepository.findAll().stream()
-                .map(TodoResponse::fromEntity)
+                .map(todoMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
@@ -30,42 +32,42 @@ public class TodoService {
     public TodoResponse getTodoById(Long id) {
         Todo todo = todoRepository.findByEntityId(id)
                 .orElseThrow(() -> new TodoNotFoundException(id));
-        return TodoResponse.fromEntity(todo);
+        return todoMapper.toResponse(todo);
     }
 
     @Transactional(readOnly = true)
     public List<TodoResponse> getTodosByCompleted(Boolean completed) {
         return todoRepository.findByCompleted(completed).stream()
-                .map(TodoResponse::fromEntity)
+                .map(todoMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<TodoResponse> getTodosByPriority(String priority) {
         return todoRepository.findByPriority(priority).stream()
-                .map(TodoResponse::fromEntity)
+                .map(todoMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<TodoResponse> getTodosByDueDateRange(OffsetDateTime start, OffsetDateTime end) {
         return todoRepository.findByDueDateBetween(start, end).stream()
-                .map(TodoResponse::fromEntity)
+                .map(todoMapper::toResponse)
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public TodoResponse createTodo(TodoRequest request) {
-        Todo todo = new Todo();
-        todo.setEntityId(request.getEntityId());
-        todo.setTitle(request.getTitle());
-        todo.setDescription(request.getDescription());
-        todo.setCompleted(request.getCompleted() != null ? request.getCompleted() : false);
-        todo.setPriority(request.getPriority() != null ? request.getPriority() : "medium");
-        todo.setDueDate(request.getDueDate());
+        Todo todo = todoMapper.toEntity(request);
+        if (todo.getCompleted() == null) {
+            todo.setCompleted(false);
+        }
+        if (todo.getPriority() == null) {
+            todo.setPriority("medium");
+        }
 
         Todo savedTodo = todoRepository.save(todo);
-        return TodoResponse.fromEntity(savedTodo);
+        return todoMapper.toResponse(savedTodo);
     }
 
     @Transactional
@@ -73,14 +75,10 @@ public class TodoService {
         Todo todo = todoRepository.findByEntityId(request.getEntityId())
                 .orElseThrow(() -> new TodoNotFoundException(id));
 
-        todo.setTitle(request.getTitle());
-        todo.setDescription(request.getDescription());
-        todo.setCompleted(request.getCompleted());
-        todo.setPriority(request.getPriority());
-        todo.setDueDate(request.getDueDate());
+        todoMapper.updateEntityFromRequest(request, todo);
 
         Todo updatedTodo = todoRepository.save(todo);
-        return TodoResponse.fromEntity(updatedTodo);
+        return todoMapper.toResponse(updatedTodo);
     }
 
     @Transactional
@@ -90,7 +88,7 @@ public class TodoService {
 
         todo.setCompleted(!todo.getCompleted());
         Todo updatedTodo = todoRepository.save(todo);
-        return TodoResponse.fromEntity(updatedTodo);
+        return todoMapper.toResponse(updatedTodo);
     }
 
     @Transactional
