@@ -8,7 +8,7 @@ import {
 } from './ipc/todoHandlers.js'
 import { getPreloadPath, getUIPath } from './pathResolver.js'
 import { CronJob } from 'cron'
-import { syncService, SyncService } from './service/SyncService.js'
+import { getSyncService } from './service/SyncService.js'
 import { todoApi } from './service/todoApiService.js'
 
 let syncJob: CronJob | null = null
@@ -36,12 +36,12 @@ app.whenReady().then(async () => {
 
   // Run immediately on startup
   console.log('[Sync] Running initial sync on startup...')
-  await syncService.runSync()
+  await getSyncService().runSync()
 
   // Create cron job with the same function
   syncJob = new CronJob(
     '* * * * *',
-    () => syncService.runSync(),
+    () => getSyncService().runSync(),
     null,
     true,
     'America/New_York',

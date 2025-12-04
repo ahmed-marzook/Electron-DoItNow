@@ -336,10 +336,18 @@ class SyncService {
   }
 }
 
-export const syncService = new SyncService(getDatabase(), todoApi, {
-  maxRetries: 3,
-  batchSize: 50,
-})
+// Lazy initialization to avoid calling getDatabase() at module load time
+let _syncService: SyncService | null = null
+
+export function getSyncService(): SyncService {
+  if (!_syncService) {
+    _syncService = new SyncService(getDatabase(), todoApi, {
+      maxRetries: 3,
+      batchSize: 50,
+    })
+  }
+  return _syncService
+}
 
 export { SyncService }
 export type { SyncResult, SyncOptions }
