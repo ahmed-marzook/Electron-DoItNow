@@ -6,13 +6,12 @@ import com.kaizenflow.doitnow.entity.Todo;
 import com.kaizenflow.doitnow.exception.TodoNotFoundException;
 import com.kaizenflow.doitnow.mapper.TodoMapper;
 import com.kaizenflow.doitnow.repository.TodoRepository;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,15 +22,12 @@ public class TodoService {
 
     @Transactional(readOnly = true)
     public List<TodoResponse> getAllTodos() {
-        return todoRepository.findAll().stream()
-                .map(todoMapper::toResponse)
-                .collect(Collectors.toList());
+        return todoRepository.findAll().stream().map(todoMapper::toResponse).collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public TodoResponse getTodoById(Long id) {
-        Todo todo = todoRepository.findByEntityId(id)
-                .orElseThrow(() -> new TodoNotFoundException(id));
+        Todo todo = todoRepository.findByEntityId(id).orElseThrow(() -> new TodoNotFoundException(id));
         return todoMapper.toResponse(todo);
     }
 
@@ -72,8 +68,8 @@ public class TodoService {
 
     @Transactional
     public TodoResponse updateTodo(Long id, TodoRequest request) {
-        Todo todo = todoRepository.findByEntityId(request.getEntityId())
-                .orElseThrow(() -> new TodoNotFoundException(id));
+        Todo todo =
+                todoRepository.findByEntityId(request.getEntityId()).orElseThrow(() -> new TodoNotFoundException(id));
 
         todoMapper.updateEntityFromRequest(request, todo);
 
@@ -83,8 +79,7 @@ public class TodoService {
 
     @Transactional
     public TodoResponse toggleTodoCompleted(Long id) {
-        Todo todo = todoRepository.findByEntityId(id)
-                .orElseThrow(() -> new TodoNotFoundException(id));
+        Todo todo = todoRepository.findByEntityId(id).orElseThrow(() -> new TodoNotFoundException(id));
 
         todo.setCompleted(!todo.getCompleted());
         Todo updatedTodo = todoRepository.save(todo);
@@ -93,8 +88,7 @@ public class TodoService {
 
     @Transactional
     public void deleteTodo(Long id) {
-        todoRepository.findByEntityId(id)
-                .orElseThrow(() -> new TodoNotFoundException(id));
+        todoRepository.findByEntityId(id).orElseThrow(() -> new TodoNotFoundException(id));
         todoRepository.deleteById(id);
     }
 }

@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '4.0.0'
 	id 'io.spring.dependency-management' version '1.1.7'
+    id("com.diffplug.spotless") version "6.25.0"
 }
 
 group = 'com.kaizenflow'
@@ -32,9 +33,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.liquibase:liquibase-core'
     implementation 'org.flywaydb:flyway-core'
-    implementation 'org.flywaydb:flyway-mysql'
 	implementation 'org.mapstruct:mapstruct:1.5.5.Final'
 	runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly("org.flywaydb:flyway-database-postgresql")
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	annotationProcessor 'org.projectlombok:lombok'
@@ -48,4 +49,13 @@ dependencies {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+spotless {
+    java {
+        palantirJavaFormat('2.83.0')
+        importOrder()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }

@@ -4,13 +4,12 @@ import com.kaizenflow.doitnow.dto.TodoRequest;
 import com.kaizenflow.doitnow.dto.TodoResponse;
 import com.kaizenflow.doitnow.service.TodoService;
 import jakarta.validation.Valid;
+import java.time.OffsetDateTime;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.OffsetDateTime;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/todos")
@@ -22,8 +21,7 @@ public class TodoController {
 
     @GetMapping
     public ResponseEntity<List<TodoResponse>> getAllTodos(
-            @RequestParam(required = false) Boolean completed,
-            @RequestParam(required = false) String priority) {
+            @RequestParam(required = false) Boolean completed, @RequestParam(required = false) String priority) {
 
         if (completed != null) {
             return ResponseEntity.ok(todoService.getTodosByCompleted(completed));
@@ -43,8 +41,7 @@ public class TodoController {
 
     @GetMapping("/due-date")
     public ResponseEntity<List<TodoResponse>> getTodosByDueDateRange(
-            @RequestParam OffsetDateTime start,
-            @RequestParam OffsetDateTime end) {
+            @RequestParam OffsetDateTime start, @RequestParam OffsetDateTime end) {
         return ResponseEntity.ok(todoService.getTodosByDueDateRange(start, end));
     }
 
@@ -55,9 +52,7 @@ public class TodoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TodoResponse> updateTodo(
-            @PathVariable Long id,
-            @Valid @RequestBody TodoRequest request) {
+    public ResponseEntity<TodoResponse> updateTodo(@PathVariable Long id, @Valid @RequestBody TodoRequest request) {
         TodoResponse response = todoService.updateTodo(id, request);
         return ResponseEntity.ok(response);
     }

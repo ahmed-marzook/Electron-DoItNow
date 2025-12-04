@@ -1,9 +1,7 @@
 package com.kaizenflow.doitnow.dto;
 
-import com.kaizenflow.doitnow.entity.Todo;
-import lombok.Data;
-
 import java.time.OffsetDateTime;
+import lombok.Data;
 
 @Data
 public class TodoResponse {

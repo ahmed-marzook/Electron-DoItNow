@@ -1,15 +1,14 @@
 package com.kaizenflow.doitnow.mapper;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.kaizenflow.doitnow.dto.TodoRequest;
 import com.kaizenflow.doitnow.dto.TodoResponse;
 import com.kaizenflow.doitnow.entity.Todo;
+import java.time.OffsetDateTime;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
-import java.time.OffsetDateTime;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 class TodoMapperTest {
