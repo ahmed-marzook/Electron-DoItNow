@@ -20,12 +20,5 @@ spring:
           time_zone: UTC
         order_inserts: true
         order_updates: true
-  liquibase:
+  flyway:
     enabled: true
-    change-log: classpath:db/changelog/db.changelog-master.yaml
-    default-schema: public
-
-logging:
-  level:
-    liquibase: INFO
-    liquibase.changelog: DEBUG

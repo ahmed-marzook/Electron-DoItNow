@@ -30,7 +30,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
       DO_IT_NOW_DB_USERNAME: postgres
       DO_IT_NOW_DB_PASSWORD: postgres
-      SPRING_LIQUIBASE_ENABLED: "true"
+      SPRING_FLYWAY_ENABLED: true
     depends_on:
       postgres:
         condition: service_healthy
