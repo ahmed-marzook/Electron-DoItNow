@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3'
 import { getDatabasePath } from './pathResolver.js'
+import { logInfo, logError, logDebug } from './logger.js'
 
 let db: Database.Database | null = null
 
@@ -51,7 +52,7 @@ function initSchema() {
     CREATE INDEX IF NOT EXISTS idx_created_at ON sync_queue(created_at);
   `)
 
-  console.log('Database schema initialized')
+  logInfo('Database schema initialized')
 }
 
 /**
@@ -120,12 +121,12 @@ function seedDatabase() {
       },
     ])
 
-    console.log('Sample todo data inserted')
+    logInfo('Sample todo data inserted')
   }
 
   // Log current data
   const todos = db.prepare('SELECT * FROM todos ORDER BY created_at DESC').all()
-  console.log('Current todos in database:', todos)
+  logDebug('Current todos in database:', { todos })
 }
 
 /**
@@ -134,10 +135,16 @@ function seedDatabase() {
  */
 export function initDatabase() {
   const dbPath = getDatabasePath()
-  console.log('Database location:', dbPath)
+  logInfo('Database location:', { path: dbPath })
 
   // 🔥 Remove verbose logging in production for better performance
-  db = new Database(dbPath, { verbose: console.log })
+  db = new Database(dbPath, {
+    verbose: (msg) => {
+      if (msg && typeof msg === 'string') {
+        logDebug(msg)
+      }
+    },
+  })
 
   // 🔥 Performance optimizations
   // WAL mode allows multiple readers and better concurrency
@@ -155,7 +162,7 @@ export function initDatabase() {
   // Memory-mapped I/O for faster reads (30MB)
   db.pragma('mmap_size = 30000000')
 
-  console.log('Database optimizations applied')
+  logInfo('Database optimizations applied')
 
   // Initialize schema first
   initSchema()
@@ -183,17 +190,17 @@ export function closeDatabase() {
   try {
     // If you want to be extra safe and use better-sqlite3's flag:
     if (!db || !(db as any).open) {
-      console.log('Database connection is already closed')
+      logInfo('Database connection is already closed')
       db = null
       return
     }
 
     db.pragma('wal_checkpoint(TRUNCATE)')
     db.close()
-    console.log('Database connection closed')
+    logInfo('Database connection closed')
 
     db = null
   } catch (error) {
-    console.error('Error closing database:', error)
+    logError('Error closing database:', error as Error)
   }
 }

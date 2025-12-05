@@ -10,6 +10,7 @@ import { getPreloadPath, getUIPath } from './pathResolver.js'
 import { CronJob } from 'cron'
 import { getSyncService } from './service/SyncService.js'
 import { todoApi } from './service/todoApiService.js'
+import logger, { logInfo, logError } from './logger.js'
 
 let syncJob: CronJob | null = null
 
@@ -35,7 +36,7 @@ app.whenReady().then(async () => {
   initDatabase()
 
   // Run immediately on startup
-  console.log('[Sync] Running initial sync on startup...')
+  logInfo('[Sync] Running initial sync on startup...')
   await getSyncService().runSync()
 
   // Create cron job with the same function
@@ -47,7 +48,7 @@ app.whenReady().then(async () => {
     'America/New_York',
   )
 
-  console.log('[Sync] Cron job started - will run every minute')
+  logInfo('[Sync] Cron job started - will run every minute')
 
   // Register IPC handlers for To Do operations
   registerTodoHandlers()
@@ -70,11 +71,11 @@ app.on('window-all-closed', () => {
 
 // Clean up resources before app quits (all platforms)
 app.on('before-quit', () => {
-  console.log('[App] Quitting, cleaning up resources...')
+  logInfo('[App] Quitting, cleaning up resources...')
 
   // Stop the cron job
   if (syncJob) {
-    console.log('[Sync] Stopping cron job...')
+    logInfo('[Sync] Stopping cron job...')
     syncJob.stop()
     syncJob = null
   }
@@ -83,5 +84,5 @@ app.on('before-quit', () => {
   unregisterTodoHandlers()
   closeDatabase()
 
-  console.log('[App] Cleanup complete')
+  logInfo('[App] Cleanup complete')
 })
