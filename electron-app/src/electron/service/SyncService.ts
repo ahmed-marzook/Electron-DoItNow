@@ -6,6 +6,7 @@ import type { Todo, TodoRequest } from '@/shared/index.js'
 import type { ApiError } from '@electron/types/apiError.js'
 import { getDatabase } from '@electron/database.js'
 import { parseISO, formatISO, format, isValid } from 'date-fns'
+import logger, { logInfo, logError } from '@electron/logger.js'
 
 interface SyncResult {
   success: number
@@ -49,16 +50,16 @@ class SyncService {
    */
   async runSync(): Promise<void> {
     const timestamp = new Date().toLocaleString()
-    console.log('[Sync] Starting sync job at', timestamp)
+    logInfo('[Sync] Starting sync job at', { timestamp })
 
     try {
       if (this.isSyncing()) {
-        console.log('[Sync] Previous sync still in progress, skipping...')
+        logInfo('[Sync] Previous sync still in progress, skipping...')
         return
       }
 
       const statsBefore = this.getQueueStats()
-      console.log('[Sync] Queue before:', {
+      logInfo('[Sync] Queue before:', {
         total: statsBefore.total,
         pending: statsBefore.pending,
         failed: statsBefore.failed,
@@ -66,20 +67,20 @@ class SyncService {
 
       const result = await this.processSyncQueue()
 
-      console.log('[Sync] Completed:', {
+      logInfo('[Sync] Completed:', {
         success: result.success,
         failed: result.failed,
         errors: result.errors.length > 0 ? result.errors : undefined,
       })
 
       const statsAfter = this.getQueueStats()
-      console.log('[Sync] Queue after:', {
+      logInfo('[Sync] Queue after:', {
         total: statsAfter.total,
         pending: statsAfter.pending,
         failed: statsAfter.failed,
       })
     } catch (error) {
-      console.error('[Sync] Error during sync:', error)
+      logError('[Sync] Error during sync:', error as Error)
     }
   }
 

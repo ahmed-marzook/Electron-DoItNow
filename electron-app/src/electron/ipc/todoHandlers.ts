@@ -9,6 +9,7 @@ import type {
 import type { IpcResponse } from '@shared/types/ipc.types.js'
 import { SyncQueueDatabaseService } from '@electron/service/syncQueueDatabaseService.js'
 import { getSyncService } from '@electron/service/SyncService.js'
+import { logInfo, logError } from '@electron/logger.js'
 
 /**
  * List of registered IPC channels for cleanup
@@ -39,7 +40,7 @@ export function registerTodoHandlers() {
       const todos = todoDbService.getAllTodos()
       return { success: true, data: todos }
     } catch (error) {
-      console.error('Error fetching todos:', error)
+      logError('Error fetching todos:', error as Error)
       return { success: false, error: (error as Error).message }
     }
   })
@@ -57,7 +58,7 @@ export function registerTodoHandlers() {
 
       return { success: true, data: todo }
     } catch (error) {
-      console.error('Error fetching todo:', error)
+      logError('Error fetching todo:', error as Error)
       return { success: false, error: (error as Error).message }
     }
   })
@@ -74,7 +75,7 @@ export function registerTodoHandlers() {
         syncQueueService.queueCreate('todo', newTodo.id.toString(), newTodo)
         return { success: true, data: newTodo }
       } catch (error) {
-        console.error('Error creating todo:', error)
+        logError('Error creating todo:', error as Error)
         return { success: false, error: (error as Error).message }
       }
     },
@@ -102,7 +103,7 @@ export function registerTodoHandlers() {
 
         return { success: true, data: updatedTodo }
       } catch (error) {
-        console.error('Error updating todo:', error)
+        logError('Error updating todo:', error as Error)
         return { success: false, error: (error as Error).message }
       }
     },
@@ -123,7 +124,7 @@ export function registerTodoHandlers() {
 
       return { success: true }
     } catch (error) {
-      console.error('Error deleting todo:', error)
+      logError('Error deleting todo:', error as Error)
       return { success: false, error: (error as Error).message }
     }
   })
@@ -136,12 +137,12 @@ export function registerTodoHandlers() {
       await getSyncService().runSync()
       return { success: true }
     } catch (error) {
-      console.error('Error running manual sync:', error)
+      logError('Error running manual sync:', error as Error)
       return { success: false, error: (error as Error).message }
     }
   })
 
-  console.log('Todo IPC handlers registered')
+  logInfo('Todo IPC handlers registered')
 }
 
 /**
@@ -152,5 +153,5 @@ export function unregisterTodoHandlers() {
   IPC_CHANNELS.forEach((channel) => {
     ipcMain.removeHandler(channel)
   })
-  console.log('Todo IPC handlers unregistered')
+  logInfo('Todo IPC handlers unregistered')
 }
