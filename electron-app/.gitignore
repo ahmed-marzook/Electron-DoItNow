@@ -5,16 +5,14 @@ dist-ssr
 dist-react
 dist-electron
 *.local
+!.env.local
+!.env.preprod
+!.env.production
 count.txt
 
 # Environment files
 .env
-.env.local
-.env.preprod
-.env.production
 .env.*.local
-# Keep .env.example in git
-!.env.example
 
 .nitro
 .tanstack
