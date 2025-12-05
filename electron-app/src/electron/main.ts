@@ -44,16 +44,16 @@ app.whenReady().then(async () => {
   await getSyncService().runSync()
 
   // Create cron job with configuration from environment
-  if (config.features.autoSync) {
+  if (config.sync.enabled) {
     syncJob = new CronJob(
-      config.sync.intervalCron,
+      config.sync.cron,
       () => getSyncService().runSync(),
       null,
       true,
       config.sync.timezone,
     )
 
-    logInfo(`[Sync] Cron job started - running on schedule: ${config.sync.intervalCron}`)
+    logInfo(`[Sync] Cron job started - running on schedule: ${config.sync.cron}`)
   } else {
     logInfo('[Sync] Auto-sync is disabled via configuration')
   }
