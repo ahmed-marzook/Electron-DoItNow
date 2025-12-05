@@ -1,8 +1,3 @@
---liquibase formatted sql
-
---changeset system:001-create-todo-table
---comment: Initial schema - Create todos table with indexes
-
 CREATE TABLE
     IF NOT EXISTS todos (
         id SERIAL PRIMARY KEY,
@@ -17,7 +12,10 @@ CREATE TABLE
     );
 
 -- Index for common queries
-CREATE INDEX IF NOT EXISTS idx_todos_completed ON todos(completed);
-CREATE INDEX IF NOT EXISTS idx_todos_due_date ON todos(due_date) WHERE due_date IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_todos_completed ON todos (completed);
 
---rollback DROP TABLE IF EXISTS todos CASCADE;
+CREATE INDEX IF NOT EXISTS idx_todos_completed ON todos (entity_id);
+
+CREATE INDEX IF NOT EXISTS idx_todos_due_date ON todos (due_date)
+WHERE
+    due_date IS NOT NULL;

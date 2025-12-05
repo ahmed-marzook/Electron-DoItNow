@@ -5,6 +5,7 @@ import type { SyncQueueRow } from '@electron/types/syncQueue.types.js'
 import type { Todo, TodoRequest } from '@/shared/index.js'
 import type { ApiError } from '@electron/types/apiError.js'
 import { getDatabase } from '@electron/database.js'
+import { parseISO, formatISO, format, isValid } from 'date-fns'
 
 interface SyncResult {
   success: number
@@ -167,8 +168,10 @@ class SyncService {
         description: parsePayload.description,
         completed: parsePayload.completed === 1,
         priority: parsePayload.priority,
-        dueDate: parsePayload.due_date,
-        createdAt: String(item.created_at),
+        dueDate: parsePayload.due_date
+          ? formatISO(parseISO(parsePayload.due_date))
+          : undefined,
+        createdAt: formatISO(new Date(item.created_at)),
       } as TodoRequest
 
       // Call appropriate API endpoint based on action type

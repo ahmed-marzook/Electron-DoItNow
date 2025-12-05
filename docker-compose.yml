@@ -7,9 +7,9 @@ services:
       POSTGRES_USER: postgres
     ports:
       - "5432:5432"
-    volumes:
-    # - /var/lib/postgresql
-    - ./docker-init/postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
+    # volumes:
+    # # - /var/lib/postgresql
+    # - ./docker-init/postgres-init.sql:/docker-entrypoint-initdb.d/postgres-init.sql
     tmpfs:
       - /var/lib/postgresql
     restart: unless-stopped
