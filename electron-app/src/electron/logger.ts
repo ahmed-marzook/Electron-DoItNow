@@ -3,6 +3,7 @@ import DailyRotateFile from 'winston-daily-rotate-file'
 import { app } from 'electron'
 import path from 'path'
 import { isDev } from './util.js'
+import chalk from 'chalk'
 
 // Get logs directory path
 const getLogsPath = (): string => {
@@ -14,13 +15,60 @@ const getLogsPath = (): string => {
   return path.join(app.getPath('userData'), 'logs')
 }
 
-// Custom format for console output with colors
+// Custom format for console output with chalk colors
 const consoleFormat = winston.format.combine(
-  winston.format.colorize(),
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   winston.format.printf(({ timestamp, level, message, ...meta }) => {
-    const metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''
-    return `${timestamp} [${level}]: ${message} ${metaStr}`
+    // Format timestamp with gray color
+    const formattedTimestamp = chalk.gray(timestamp)
+
+    // Format level with appropriate colors and badges
+    let formattedLevel = ''
+    switch (level) {
+      case 'error':
+        formattedLevel = chalk.bgRed.white.bold(' ERROR ')
+        break
+      case 'warn':
+        formattedLevel = chalk.bgYellow.black.bold(' WARN  ')
+        break
+      case 'info':
+        formattedLevel = chalk.bgBlue.white.bold(' INFO  ')
+        break
+      case 'debug':
+        formattedLevel = chalk.bgMagenta.white.bold(' DEBUG ')
+        break
+      default:
+        formattedLevel = chalk.bgGray.white.bold(` ${level.toUpperCase().padEnd(5)} `)
+    }
+
+    // Format message
+    let formattedMessage = message
+    if (level === 'error') {
+      formattedMessage = chalk.red(message)
+    } else if (level === 'warn') {
+      formattedMessage = chalk.yellow(message)
+    } else if (level === 'info') {
+      formattedMessage = chalk.cyan(message)
+    } else if (level === 'debug') {
+      formattedMessage = chalk.magenta(message)
+    }
+
+    // Format metadata
+    let metaStr = ''
+    if (Object.keys(meta).length > 0) {
+      // Remove Winston internal fields
+      const cleanMeta = { ...meta }
+      delete cleanMeta.service
+      delete cleanMeta.timestamp
+      delete cleanMeta.level
+      delete cleanMeta.message
+
+      if (Object.keys(cleanMeta).length > 0) {
+        metaStr = '\n' + chalk.dim(JSON.stringify(cleanMeta, null, 2))
+      }
+    }
+
+    return `${formattedTimestamp} ${formattedLevel} ${formattedMessage}${metaStr}`
   }),
 )
 
