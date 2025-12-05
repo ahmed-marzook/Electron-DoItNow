@@ -6,7 +6,16 @@ dist-react
 dist-electron
 *.local
 count.txt
+
+# Environment files
 .env
+.env.local
+.env.preprod
+.env.production
+.env.*.local
+# Keep .env.example in git
+!.env.example
+
 .nitro
 .tanstack
 .wrangler

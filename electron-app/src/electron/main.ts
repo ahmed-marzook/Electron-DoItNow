@@ -1,3 +1,7 @@
+// Load environment variables first
+import { loadEnvConfig, config } from './config.js'
+loadEnvConfig()
+
 import { app, BrowserWindow } from 'electron'
 
 import { isDev } from './util.js'
@@ -39,16 +43,20 @@ app.whenReady().then(async () => {
   logInfo('[Sync] Running initial sync on startup...')
   await getSyncService().runSync()
 
-  // Create cron job with the same function
-  syncJob = new CronJob(
-    '* * * * *',
-    () => getSyncService().runSync(),
-    null,
-    true,
-    'America/New_York',
-  )
+  // Create cron job with configuration from environment
+  if (config.features.autoSync) {
+    syncJob = new CronJob(
+      config.sync.intervalCron,
+      () => getSyncService().runSync(),
+      null,
+      true,
+      config.sync.timezone,
+    )
 
-  logInfo('[Sync] Cron job started - will run every minute')
+    logInfo(`[Sync] Cron job started - running on schedule: ${config.sync.intervalCron}`)
+  } else {
+    logInfo('[Sync] Auto-sync is disabled via configuration')
+  }
 
   // Register IPC handlers for To Do operations
   registerTodoHandlers()

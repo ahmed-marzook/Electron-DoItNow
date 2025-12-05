@@ -1,16 +1,17 @@
 import type { TodoRequest, TodoResponse } from '@/shared/index.js'
 import { ApiError } from '@electron/types/apiError.js'
+import { config } from '../config.js'
 
 class TodoApiService {
   private baseUrl: string
   private timeout: number
 
   constructor(
-    baseUrl: string = 'http://localhost:8080',
-    timeout: number = 10000,
+    baseUrl?: string,
+    timeout?: number,
   ) {
-    this.baseUrl = baseUrl
-    this.timeout = timeout
+    this.baseUrl = baseUrl || config.api.baseUrl
+    this.timeout = timeout || config.api.timeout
   }
 
   /**
