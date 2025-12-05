@@ -8,6 +8,24 @@ A comprehensive guide for scaffolding a modern desktop application using Electro
 
 If you need a Java backend, generate one using [Spring Initializr](https://start.spring.io/) with your required dependencies.
 
+### Docker Setup
+
+To run the backend and the database using Docker Compose:
+
+1.  **Build and run the containers:**
+
+    ```bash
+    docker compose up --build
+    ```
+
+    This will start the PostgreSQL database and the Java backend. The backend will be available at `http://localhost:8080`.
+
+2.  **Stop the containers:**
+
+    ```bash
+    docker compose down
+    ```
+
 ---
 
 ## 2. Set Up the Electron Renderer using Vite + React

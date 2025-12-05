@@ -21,6 +21,22 @@ services:
     networks:
       - devnet
 
+  backend:
+    build: ./backend
+    container_name: do-it-now-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      DO_IT_NOW_DB_USERNAME: postgres
+      DO_IT_NOW_DB_PASSWORD: postgres
+      SPRING_LIQUIBASE_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - devnet
+
 # volumes:
 #   postgres_data:
 
