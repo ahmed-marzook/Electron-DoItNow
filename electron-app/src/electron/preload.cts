@@ -61,4 +61,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     onTodoUpdated: (callback) => ipcOn('todo:updated', callback),
     onTodoDeleted: (callback) => ipcOn('todo:deleted', callback),
   },
+  user: {
+    // Request/Response operations (invoke)
+    getAll: () => ipcInvoke('user:getAll'),
+    getById: (id: number) => ipcInvoke('user:getById', id),
+    create: (userData) => ipcInvoke('user:create', userData),
+    update: (id: number, userData) => ipcInvoke('user:update', id, userData),
+    delete: (id: number) => ipcInvoke('user:delete', id),
+
+    // Event subscriptions (on)
+    onUserAdded: (callback) => ipcOn('user:added', callback),
+    onUserUpdated: (callback) => ipcOn('user:updated', callback),
+    onUserDeleted: (callback) => ipcOn('user:deleted', callback),
+  },
 } as ElectronAPI)

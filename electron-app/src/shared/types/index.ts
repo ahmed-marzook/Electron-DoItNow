@@ -4,4 +4,5 @@
  */
 
 export * from './todo.types.js'
+export * from './user.types.js'
 export * from './ipc.types.js'
