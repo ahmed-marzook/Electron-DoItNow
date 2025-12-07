@@ -10,6 +10,10 @@ import {
   registerTodoHandlers,
   unregisterTodoHandlers,
 } from './ipc/todoHandlers.js'
+import {
+  registerUserHandlers,
+  unregisterUserHandlers,
+} from './ipc/userHandlers.js'
 import { getPreloadPath, getUIPath } from './pathResolver.js'
 import { CronJob } from 'cron'
 import { getSyncService } from './service/SyncService.js'
@@ -60,6 +64,7 @@ app.whenReady().then(async () => {
 
   // Register IPC handlers for To Do operations
   registerTodoHandlers()
+  registerUserHandlers()
 
   // Create the main window
   createWindow()
@@ -90,6 +95,7 @@ app.on('before-quit', () => {
 
   // Unregister handlers and close database
   unregisterTodoHandlers()
+  unregisterUserHandlers()
   closeDatabase()
 
   logInfo('[App] Cleanup complete')
