@@ -22,3 +22,16 @@ spring:
         order_updates: true
   flyway:
     enabled: true
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    docExpansion: none
+    displayRequestDuration: true
+    filter: true
+  show-actuator: false
