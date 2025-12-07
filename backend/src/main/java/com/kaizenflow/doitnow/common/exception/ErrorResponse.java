@@ -1,4 +1,4 @@
-package com.kaizenflow.doitnow.exception;
+package com.kaizenflow.doitnow.common.exception;
 
 import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;

@@ -1,11 +1,11 @@
-package com.kaizenflow.doitnow.service;
+package com.kaizenflow.doitnow.todo.service;
 
-import com.kaizenflow.doitnow.dto.TodoRequest;
-import com.kaizenflow.doitnow.dto.TodoResponse;
-import com.kaizenflow.doitnow.entity.Todo;
-import com.kaizenflow.doitnow.exception.TodoNotFoundException;
-import com.kaizenflow.doitnow.mapper.TodoMapper;
-import com.kaizenflow.doitnow.repository.TodoRepository;
+import com.kaizenflow.doitnow.todo.dto.TodoRequest;
+import com.kaizenflow.doitnow.todo.dto.TodoResponse;
+import com.kaizenflow.doitnow.todo.entity.Todo;
+import com.kaizenflow.doitnow.todo.exception.TodoNotFoundException;
+import com.kaizenflow.doitnow.todo.mapper.TodoMapper;
+import com.kaizenflow.doitnow.todo.repository.TodoRepository;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;

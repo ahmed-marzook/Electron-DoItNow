@@ -1,4 +1,6 @@
-package com.kaizenflow.doitnow.entity;
+package com.kaizenflow.doitnow.todo.entity;
+
+import com.kaizenflow.doitnow.user.entity.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

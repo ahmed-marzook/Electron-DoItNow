@@ -1,8 +1,9 @@
-package com.kaizenflow.doitnow.controller;
+package com.kaizenflow.doitnow.todo.controller;
 
-import com.kaizenflow.doitnow.dto.TodoRequest;
-import com.kaizenflow.doitnow.dto.TodoResponse;
-import com.kaizenflow.doitnow.service.TodoService;
+import com.kaizenflow.doitnow.todo.dto.TodoRequest;
+import com.kaizenflow.doitnow.todo.dto.TodoResponse;
+import com.kaizenflow.doitnow.todo.service.TodoService;
+
 import jakarta.validation.Valid;
 import java.time.OffsetDateTime;
 import java.util.List;

@@ -1,8 +1,8 @@
-package com.kaizenflow.doitnow.mapper;
+package com.kaizenflow.doitnow.user.mapper;
 
-import com.kaizenflow.doitnow.dto.UserRequest;
-import com.kaizenflow.doitnow.dto.UserResponse;
-import com.kaizenflow.doitnow.entity.User;
+import com.kaizenflow.doitnow.user.dto.UserRequest;
+import com.kaizenflow.doitnow.user.dto.UserResponse;
+import com.kaizenflow.doitnow.user.entity.User;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

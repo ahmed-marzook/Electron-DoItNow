@@ -1,6 +1,6 @@
-package com.kaizenflow.doitnow.repository;
+package com.kaizenflow.doitnow.user.repository;
 
-import com.kaizenflow.doitnow.entity.User;
+import com.kaizenflow.doitnow.user.entity.User;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;

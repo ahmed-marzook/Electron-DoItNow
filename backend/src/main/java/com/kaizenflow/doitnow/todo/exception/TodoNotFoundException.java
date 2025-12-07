@@ -1,4 +1,4 @@
-package com.kaizenflow.doitnow.exception;
+package com.kaizenflow.doitnow.todo.exception;
 
 public class TodoNotFoundException extends RuntimeException {
     public TodoNotFoundException(String message) {

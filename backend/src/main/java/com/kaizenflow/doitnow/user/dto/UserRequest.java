@@ -1,4 +1,4 @@
-package com.kaizenflow.doitnow.dto;
+package com.kaizenflow.doitnow.user.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

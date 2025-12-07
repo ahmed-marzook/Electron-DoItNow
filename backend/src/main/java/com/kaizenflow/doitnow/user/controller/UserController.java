@@ -1,8 +1,8 @@
-package com.kaizenflow.doitnow.controller;
+package com.kaizenflow.doitnow.user.controller;
 
-import com.kaizenflow.doitnow.dto.UserRequest;
-import com.kaizenflow.doitnow.dto.UserResponse;
-import com.kaizenflow.doitnow.service.UserService;
+import com.kaizenflow.doitnow.user.dto.UserRequest;
+import com.kaizenflow.doitnow.user.dto.UserResponse;
+import com.kaizenflow.doitnow.user.service.UserService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;

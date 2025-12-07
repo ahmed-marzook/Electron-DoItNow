@@ -1,11 +1,11 @@
-package com.kaizenflow.doitnow.service;
+package com.kaizenflow.doitnow.user.service;
 
-import com.kaizenflow.doitnow.dto.UserRequest;
-import com.kaizenflow.doitnow.dto.UserResponse;
-import com.kaizenflow.doitnow.entity.User;
-import com.kaizenflow.doitnow.exception.UserNotFoundException;
-import com.kaizenflow.doitnow.mapper.UserMapper;
-import com.kaizenflow.doitnow.repository.UserRepository;
+import com.kaizenflow.doitnow.user.dto.UserRequest;
+import com.kaizenflow.doitnow.user.dto.UserResponse;
+import com.kaizenflow.doitnow.user.entity.User;
+import com.kaizenflow.doitnow.user.exception.UserNotFoundException;
+import com.kaizenflow.doitnow.user.mapper.UserMapper;
+import com.kaizenflow.doitnow.user.repository.UserRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;

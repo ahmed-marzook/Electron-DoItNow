@@ -1,4 +1,4 @@
-package com.kaizenflow.doitnow.dto;
+package com.kaizenflow.doitnow.todo.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

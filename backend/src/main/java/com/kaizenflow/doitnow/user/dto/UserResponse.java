@@ -1,4 +1,4 @@
-package com.kaizenflow.doitnow.dto;
+package com.kaizenflow.doitnow.user.dto;
 
 import java.time.OffsetDateTime;
 import lombok.Data;
