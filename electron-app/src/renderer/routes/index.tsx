@@ -1,7 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import type { Todo } from '@shared/types/todo.types'
+import type { User } from '@shared/types/user.types'
 import { todoService } from '@renderer/services/todoService'
+import { userService } from '@renderer/services/userService'
 
 export const Route = createFileRoute('/')({
   component: TodosPage,
@@ -9,6 +11,7 @@ export const Route = createFileRoute('/')({
 
 function TodosPage() {
   const [todos, setTodos] = useState<Todo[]>([])
+  const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
@@ -18,16 +21,19 @@ function TodosPage() {
     description: '',
     priority: 'medium' as 'low' | 'medium' | 'high',
     due_date: '',
+    user_id: null as number | null,
   })
   const [editTodo, setEditTodo] = useState({
     title: '',
     description: '',
     priority: 'medium' as 'low' | 'medium' | 'high',
     due_date: '',
+    user_id: null as number | null,
   })
 
   useEffect(() => {
     loadTodos()
+    loadUsers()
   }, [])
 
   const loadTodos = async () => {
@@ -40,6 +46,16 @@ function TodosPage() {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadUsers = async () => {
+    try {
+      const data = await userService.getAll()
+      setUsers(data)
+    } catch (err) {
+      // Silently fail if users can't be loaded - it's optional
+      console.error('Failed to load users:', err)
     }
   }
 
@@ -64,6 +80,12 @@ function TodosPage() {
       default:
         return 'bg-gray-500/20 border-gray-500/40 text-gray-200'
     }
+  }
+
+  const getUserName = (userId: number | null) => {
+    if (!userId) return null
+    const user = users.find(u => u.id === userId)
+    return user ? user.username : `User #${userId}`
   }
 
   if (loading) {
@@ -102,6 +124,7 @@ function TodosPage() {
         completed: newCompletedStatus as 0 | 1,
         priority: todo.priority,
         due_date: todo.due_date,
+        user_id: todo.user_id,
       })
     } catch (err) {
       // Revert on error
@@ -128,6 +151,7 @@ function TodosPage() {
         completed: 0,
         priority: newTodo.priority,
         due_date: newTodo.due_date || null,
+        user_id: newTodo.user_id,
       })
 
       setTodos((prevTodos) => [createdTodo, ...prevTodos])
@@ -136,6 +160,7 @@ function TodosPage() {
         description: '',
         priority: 'medium',
         due_date: '',
+        user_id: null,
       })
       setShowCreateForm(false)
     } catch (err) {
@@ -160,6 +185,7 @@ function TodosPage() {
       description: todo.description || '',
       priority: todo.priority,
       due_date: todo.due_date || '',
+      user_id: todo.user_id,
     })
     setShowCreateForm(false)
   }
@@ -171,6 +197,7 @@ function TodosPage() {
       description: '',
       priority: 'medium',
       due_date: '',
+      user_id: null,
     })
   }
 
@@ -194,6 +221,7 @@ function TodosPage() {
         completed: todo.completed,
         priority: editTodo.priority,
         due_date: editTodo.due_date || null,
+        user_id: editTodo.user_id,
       })
 
       setTodos((prevTodos) =>
@@ -279,7 +307,7 @@ function TodosPage() {
                   rows={3}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Priority
@@ -314,6 +342,29 @@ function TodosPage() {
                     placeholder="Select a due date"
                     aria-label="Due date"
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Assign to User (optional)
+                  </label>
+                  <select
+                    value={newTodo.user_id ?? ''}
+                    onChange={(e) =>
+                      setNewTodo({
+                        ...newTodo,
+                        user_id: e.target.value ? Number(e.target.value) : null,
+                      })
+                    }
+                    className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label="Assign to user"
+                  >
+                    <option value="">None</option>
+                    {users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.username}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
               <button
@@ -375,7 +426,7 @@ function TodosPage() {
                         aria-label="Todo description"
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-3 gap-3">
                       <div>
                         <label className="block text-sm font-medium mb-1">
                           Priority
@@ -416,6 +467,29 @@ function TodosPage() {
                           placeholder="Select a due date"
                           aria-label="Due date"
                         />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">
+                          Assign to User (optional)
+                        </label>
+                        <select
+                          value={editTodo.user_id ?? ''}
+                          onChange={(e) =>
+                            setEditTodo({
+                              ...editTodo,
+                              user_id: e.target.value ? Number(e.target.value) : null,
+                            })
+                          }
+                          className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          aria-label="Assign to user"
+                        >
+                          <option value="">None</option>
+                          {users.map((user) => (
+                            <option key={user.id} value={user.id}>
+                              {user.username}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -467,6 +541,11 @@ function TodosPage() {
                         {todo.due_date && (
                           <span>
                             Due: {new Date(todo.due_date).toLocaleDateString()}
+                          </span>
+                        )}
+                        {todo.user_id && (
+                          <span className="text-blue-300">
+                            Assigned to: {getUserName(todo.user_id)}
                           </span>
                         )}
                       </div>

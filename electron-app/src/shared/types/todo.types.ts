@@ -15,6 +15,7 @@ export interface Todo {
   completed: 0 | 1 // stored as INTEGER in SQLite
   priority: TodoPriority
   due_date: string | null // e.g. '2025-12-15' or null
+  user_id: number | null // optional user assignment
   created_at: string // SQLite timestamp
   updated_at: string // SQLite timestamp
 }
@@ -29,6 +30,7 @@ export interface TodoCreateInput {
   completed?: 0 | 1
   priority?: TodoPriority
   due_date?: string | null
+  user_id?: number | null
 }
 
 /**
@@ -41,6 +43,7 @@ export interface TodoUpdateInput {
   completed?: 0 | 1
   priority?: TodoPriority
   due_date?: string | null
+  user_id?: number | null
 }
 
 export interface TodoRequest {
@@ -50,6 +53,7 @@ export interface TodoRequest {
   completed?: boolean
   priority?: 'low' | 'medium' | 'high'
   dueDate?: string // ISO 8601 format
+  userId?: number
   createdAt?: string
 }
 
@@ -60,6 +64,7 @@ export interface TodoResponse {
   completed: boolean
   priority: string
   dueDate?: string
+  userId?: number
   createdAt: string
   updatedAt: string
 }

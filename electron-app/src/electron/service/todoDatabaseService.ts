@@ -46,8 +46,8 @@ class TodoDatabaseService {
    */
   createTodo(todoData: TodoCreateInput): Todo {
     const stmt = this.db.prepare(`
-      INSERT INTO todos (title, description, completed, priority, due_date)
-      VALUES (@title, @description, @completed, @priority, @due_date)
+      INSERT INTO todos (title, description, completed, priority, due_date, user_id)
+      VALUES (@title, @description, @completed, @priority, @due_date, @user_id)
     `)
 
     const info = stmt.run(todoData)
@@ -74,6 +74,7 @@ class TodoDatabaseService {
         completed = @completed,
         priority = @priority,
         due_date = @due_date,
+        user_id = @user_id,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = @id
     `)

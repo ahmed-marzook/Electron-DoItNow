@@ -25,11 +25,22 @@ function initSchema() {
     )
   `)
 
+  // Migration: Add user_id column if it doesn't exist
+  const columns = db.pragma('table_info(todos)')
+  const hasUserIdColumn = columns.some((col: any) => col.name === 'user_id')
+
+  if (!hasUserIdColumn) {
+    logInfo('Adding user_id column to todos table')
+    db.exec(`ALTER TABLE todos ADD COLUMN user_id INTEGER`)
+    logInfo('user_id column added successfully')
+  }
+
   // 🔥 Create indexes for faster queries
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_todos_completed ON todos(completed);
     CREATE INDEX IF NOT EXISTS idx_todos_priority ON todos(priority);
     CREATE INDEX IF NOT EXISTS idx_todos_due_date ON todos(due_date);
+    CREATE INDEX IF NOT EXISTS idx_todos_user_id ON todos(user_id);
   `)
 
   db.exec(`
