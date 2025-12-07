@@ -1,4 +1,4 @@
-package com.kaizenflow.doitnow.exception;
+package com.kaizenflow.doitnow.user.exception;
 
 public class UserNotFoundException extends RuntimeException {
     public UserNotFoundException(String message) {

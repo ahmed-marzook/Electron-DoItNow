@@ -1,4 +1,7 @@
-package com.kaizenflow.doitnow.exception;
+package com.kaizenflow.doitnow.common.exception;
+
+import com.kaizenflow.doitnow.todo.exception.TodoNotFoundException;
+import com.kaizenflow.doitnow.user.exception.UserNotFoundException;
 
 import java.time.OffsetDateTime;
 import java.util.HashMap;

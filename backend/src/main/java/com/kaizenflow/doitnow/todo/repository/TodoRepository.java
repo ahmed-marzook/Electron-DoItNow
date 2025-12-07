@@ -1,6 +1,6 @@
-package com.kaizenflow.doitnow.repository;
+package com.kaizenflow.doitnow.todo.repository;
 
-import com.kaizenflow.doitnow.entity.Todo;
+import com.kaizenflow.doitnow.todo.entity.Todo;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
