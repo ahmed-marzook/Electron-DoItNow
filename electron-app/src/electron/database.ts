@@ -15,6 +15,7 @@ function initSchema() {
   db.exec(`
     CREATE TABLE IF NOT EXISTS todos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
       title TEXT NOT NULL,
       description TEXT,
       completed INTEGER DEFAULT 0,
@@ -24,16 +25,6 @@ function initSchema() {
       updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `)
-
-  // Migration: Add user_id column if it doesn't exist
-  const columns = db.pragma('table_info(todos)')
-  const hasUserIdColumn = columns.some((col: any) => col.name === 'user_id')
-
-  if (!hasUserIdColumn) {
-    logInfo('Adding user_id column to todos table')
-    db.exec(`ALTER TABLE todos ADD COLUMN user_id INTEGER`)
-    logInfo('user_id column added successfully')
-  }
 
   // 🔥 Create indexes for faster queries
   db.exec(`
