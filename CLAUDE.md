@@ -94,9 +94,10 @@
    - Runs background sync via cron jobs
    - Location: `electron-app/src/electron/`
 
-2. **Preload Script** (`src/preload/index.cts`)
+2. **Preload Scripts** (`src/preload/`)
    - Security bridge using `contextBridge`
    - Exposes type-safe IPC API to renderer
+   - Organized by feature (todo, user) for maintainability
    - No direct Node.js access from renderer
 
 3. **Renderer Process** (`src/renderer/`)
@@ -152,7 +153,10 @@ Electron-DoItNow/
 │   │   │   └── tsconfig.json         # Electron TypeScript config
 │   │   │
 │   │   ├── preload/                  # Preload scripts (IPC bridge)
-│   │   │   ├── index.cts             # Context bridge for IPC
+│   │   │   ├── index.cts             # Main entry point - exposes API
+│   │   │   ├── helpers.ts            # Shared IPC helper functions
+│   │   │   ├── todo.ts               # Todo-specific IPC bridge
+│   │   │   ├── user.ts               # User-specific IPC bridge
 │   │   │   └── tsconfig.json         # Preload TypeScript config
 │   │   │
 │   │   ├── renderer/                 # React UI (Browser)
@@ -309,7 +313,10 @@ export interface IpcResponse<T> {
 
 **Key Files**:
 - Type definitions: `electron-app/src/shared/types/ipc.types.ts`
-- Preload bridge: `electron-app/src/preload/index.cts`
+- Preload bridge:
+  - Main entry: `electron-app/src/preload/index.cts`
+  - Feature modules: `electron-app/src/preload/{todo,user}.ts`
+  - Shared helpers: `electron-app/src/preload/helpers.ts`
 - IPC handlers: `electron-app/src/electron/ipc/*.ts`
 - Renderer services: `electron-app/src/renderer/services/*.ts`
 
@@ -442,7 +449,57 @@ export function getDatabasePath(): string {
 | Development | `./app-database.db` | `./logs/` | `./dist-electron/preload/index.cjs` |
 | Production | `~/AppData/Roaming/do-it-now/` (Win)<br>`~/Library/Application Support/do-it-now/` (Mac) | User data dir | Relative to ASAR |
 
-### 6. Database Performance Optimizations
+### 6. Feature-Based Preload Organization
+
+**Modular Preload Structure** (mirrors IPC handler organization):
+
+```
+src/preload/
+├── index.cts        # Main entry - exposes complete API
+├── helpers.ts       # Shared IPC utilities (invoke, on, send)
+├── todo.ts          # Todo feature API
+├── user.ts          # User feature API
+└── tsconfig.json    # TypeScript configuration
+```
+
+**Benefits**:
+- **Maintainability**: Each feature is self-contained
+- **Scalability**: Easy to add new features without bloating index.cts
+- **Consistency**: Mirrors the organization of IPC handlers and services
+- **Type Safety**: Feature modules export strongly-typed API creators
+
+**Pattern Example**:
+
+```typescript
+// helpers.ts - Shared utilities
+export function ipcInvoke<Key>(key: Key, ...args: any[]): Promise<...>
+export function ipcOn<Key>(key: Key, callback: (...) => void): () => void
+
+// todo.ts - Feature-specific API
+import { ipcInvoke, ipcOn } from './helpers.js'
+export function createTodoAPI(): ElectronAPI['todo'] {
+  return {
+    getAll: () => ipcInvoke('todo:getAll'),
+    getById: (id) => ipcInvoke('todo:getById', id),
+    // ...
+  }
+}
+
+// index.cts - Main entry point
+import { createTodoAPI } from './todo.js'
+import { createUserAPI } from './user.js'
+contextBridge.exposeInMainWorld('electronAPI', {
+  todo: createTodoAPI(),
+  user: createUserAPI(),
+})
+```
+
+**Adding a New Feature**:
+1. Create `src/preload/feature.ts` with `createFeatureAPI()` function
+2. Import and register in `src/preload/index.cts`
+3. Add corresponding types to `shared/types/ipc.types.ts`
+
+### 7. Database Performance Optimizations
 
 **SQLite Pragmas** (applied on init):
 
