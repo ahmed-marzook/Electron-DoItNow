@@ -71,7 +71,7 @@ function seedDatabase() {
 
   if (todoCount.count === 0) {
     const insertTodo = db.prepare(
-      'INSERT INTO todos (title, description, completed, priority, due_date) VALUES (@title, @description, @completed, @priority, @due_date)',
+      'INSERT INTO todos (title, description, completed, priority, due_date, user_id) VALUES (@title, @description, @completed, @priority, @due_date, @user_id)',
     )
 
     const insertManyTodos = db.transaction((todos) => {
@@ -85,6 +85,7 @@ function seedDatabase() {
         completed: 0,
         priority: 'high',
         due_date: '2025-12-15',
+        user_id: null,
       },
       {
         title: 'Review pull requests',
@@ -92,6 +93,7 @@ function seedDatabase() {
         completed: 0,
         priority: 'medium',
         due_date: '2025-12-05',
+        user_id: null,
       },
       {
         title: 'Fix login bug',
@@ -99,6 +101,7 @@ function seedDatabase() {
         completed: 1,
         priority: 'high',
         due_date: '2025-12-01',
+        user_id: null,
       },
       {
         title: 'Update dependencies',
@@ -106,6 +109,7 @@ function seedDatabase() {
         completed: 0,
         priority: 'low',
         due_date: '2025-12-20',
+        user_id: null,
       },
       {
         title: 'Team meeting preparation',
@@ -113,6 +117,7 @@ function seedDatabase() {
         completed: 1,
         priority: 'medium',
         due_date: '2025-12-02',
+        user_id: null,
       },
       {
         title: 'Refactor database queries',
@@ -120,6 +125,7 @@ function seedDatabase() {
         completed: 0,
         priority: 'medium',
         due_date: '2025-12-10',
+        user_id: null,
       },
     ])
 

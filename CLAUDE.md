@@ -94,9 +94,10 @@
    - Runs background sync via cron jobs
    - Location: `electron-app/src/electron/`
 
-2. **Preload Script** (`src/electron/preload.cts`)
+2. **Preload Scripts** (`src/preload/`)
    - Security bridge using `contextBridge`
    - Exposes type-safe IPC API to renderer
+   - Organized by feature (todo, user) for maintainability
    - No direct Node.js access from renderer
 
 3. **Renderer Process** (`src/renderer/`)
@@ -134,7 +135,6 @@ Electron-DoItNow/
 │   ├── src/
 │   │   ├── electron/                 # Main process (Node.js)
 │   │   │   ├── main.ts               # Entry point - app lifecycle
-│   │   │   ├── preload.cts           # Context bridge for IPC
 │   │   │   ├── database.ts           # SQLite initialization & schema
 │   │   │   ├── config.ts             # Environment configuration
 │   │   │   ├── logger.ts             # Winston logging setup
@@ -151,6 +151,12 @@ Electron-DoItNow/
 │   │   │   │   └── syncQueueDatabaseService.ts  # Queue management
 │   │   │   ├── types/                # Electron-specific types
 │   │   │   └── tsconfig.json         # Electron TypeScript config
+│   │   │
+│   │   ├── preload/                  # Preload scripts (IPC bridge)
+│   │   │   ├── index.cts             # Main entry point - exposes API
+│   │   │   ├── helpers.ts            # Shared IPC helper functions
+│   │   │   ├── todo.ts               # Todo-specific IPC bridge
+│   │   │   └── user.ts               # User-specific IPC bridge
 │   │   │
 │   │   ├── renderer/                 # React UI (Browser)
 │   │   │   ├── main.tsx              # React app entry point
@@ -201,7 +207,7 @@ Electron-DoItNow/
 |------|-------|---------|
 | App entry point | `electron-app/src/electron/main.ts` | Electron main process |
 | React entry | `electron-app/src/renderer/main.tsx` | React app initialization |
-| IPC bridge | `electron-app/src/electron/preload.cts` | Secure renderer ↔ main |
+| IPC bridge | `electron-app/src/preload/index.cts` | Secure renderer ↔ main |
 | Routes | `electron-app/src/renderer/routes/` | TanStack Router pages |
 | Shared types | `electron-app/src/shared/types/` | Cross-process types |
 | Database init | `electron-app/src/electron/database.ts` | SQLite schema & seed |
@@ -306,7 +312,10 @@ export interface IpcResponse<T> {
 
 **Key Files**:
 - Type definitions: `electron-app/src/shared/types/ipc.types.ts`
-- Preload bridge: `electron-app/src/electron/preload.cts`
+- Preload bridge:
+  - Main entry: `electron-app/src/preload/index.cts`
+  - Feature modules: `electron-app/src/preload/{todo,user}.ts`
+  - Shared helpers: `electron-app/src/preload/helpers.ts`
 - IPC handlers: `electron-app/src/electron/ipc/*.ts`
 - Renderer services: `electron-app/src/renderer/services/*.ts`
 
@@ -436,10 +445,61 @@ export function getDatabasePath(): string {
 
 | Environment | Database | Logs | Preload Script |
 |-------------|----------|------|----------------|
-| Development | `./app-database.db` | `./logs/` | `./dist-electron/preload.cjs` |
+| Development | `./app-database.db` | `./logs/` | `./dist-electron/preload/index.cjs` |
 | Production | `~/AppData/Roaming/do-it-now/` (Win)<br>`~/Library/Application Support/do-it-now/` (Mac) | User data dir | Relative to ASAR |
 
-### 6. Database Performance Optimizations
+### 6. Feature-Based Preload Organization
+
+**Modular Preload Structure** (mirrors IPC handler organization):
+
+```
+src/preload/
+├── index.cts        # Main entry - exposes complete API
+├── helpers.ts       # Shared IPC utilities (invoke, on, send)
+├── todo.ts          # Todo feature API
+└── user.ts          # User feature API
+```
+
+**Note**: Preload files are compiled together with the main process using `src/electron/tsconfig.json`. Both run in the Node.js environment with identical compiler settings, so a separate tsconfig is unnecessary.
+
+**Benefits**:
+- **Maintainability**: Each feature is self-contained
+- **Scalability**: Easy to add new features without bloating index.cts
+- **Consistency**: Mirrors the organization of IPC handlers and services
+- **Type Safety**: Feature modules export strongly-typed API creators
+
+**Pattern Example**:
+
+```typescript
+// helpers.ts - Shared utilities
+export function ipcInvoke<Key>(key: Key, ...args: any[]): Promise<...>
+export function ipcOn<Key>(key: Key, callback: (...) => void): () => void
+
+// todo.ts - Feature-specific API
+import { ipcInvoke, ipcOn } from './helpers.js'
+export function createTodoAPI(): ElectronAPI['todo'] {
+  return {
+    getAll: () => ipcInvoke('todo:getAll'),
+    getById: (id) => ipcInvoke('todo:getById', id),
+    // ...
+  }
+}
+
+// index.cts - Main entry point
+import { createTodoAPI } from './todo.js'
+import { createUserAPI } from './user.js'
+contextBridge.exposeInMainWorld('electronAPI', {
+  todo: createTodoAPI(),
+  user: createUserAPI(),
+})
+```
+
+**Adding a New Feature**:
+1. Create `src/preload/feature.ts` with `createFeatureAPI()` function
+2. Import and register in `src/preload/index.cts`
+3. Add corresponding types to `shared/types/ipc.types.ts`
+
+### 7. Database Performance Optimizations
 
 **SQLite Pragmas** (applied on init):
 
@@ -524,8 +584,8 @@ VITE_APP_NAME=Do It Now
 ```bash
 npm run build
 # 1. vite build → dist-react/
-# 2. tsc --project src/electron/tsconfig.json → dist-electron/
-# 3. tsc-alias -p src/electron/tsconfig.json (resolves @shared/*, etc.)
+# 2. tsc --project src/electron/tsconfig.json → dist-electron/ (compiles both electron/ and preload/)
+# 3. tsc-alias -p src/electron/tsconfig.json (resolves @shared/*, @preload/*, etc.)
 ```
 
 **Distribution Packages**:
@@ -1025,7 +1085,7 @@ await window.electronAPI.todo.getById(99999)
 // Should return: { success: false, error: 'Todo not found' }
 ```
 
-**Enable IPC Logging** (add to `preload.cts`):
+**Enable IPC Logging** (add to `src/preload/index.cts`):
 
 ```typescript
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -1093,7 +1153,7 @@ const apiUrl = import.meta.env.VITE_API_BASE_URL
    - IPC changes require updates in 3 places:
      1. Type definitions (`shared/types/ipc.types.ts`)
      2. Handler registration (`electron/ipc/*.ts`)
-     3. Preload bridge (`electron/preload.cts`)
+     3. Preload bridge (`preload/index.cts`)
 
 3. **Path Aliases**:
    - Always use `@shared`, `@renderer`, `@electron` aliases
@@ -1125,6 +1185,7 @@ const apiUrl = import.meta.env.VITE_API_BASE_URL
 
 3. **Preload Script**:
    - Must use `.cts` extension (CommonJS required)
+   - Located in separate `src/preload/` directory following Electron standards
    - Must be referenced in main.ts `webPreferences.preload`
    - Path resolver: Use `getPreloadPath()` for dev/prod
 
@@ -1157,7 +1218,7 @@ const apiUrl = import.meta.env.VITE_API_BASE_URL
 | Add IPC event type | `electron-app/src/shared/types/ipc.types.ts` |
 | Implement IPC handler | `electron-app/src/electron/ipc/{feature}Handlers.ts` |
 | Register handler | `electron-app/src/electron/main.ts` |
-| Expose to renderer | `electron-app/src/electron/preload.cts` |
+| Expose to renderer | `electron-app/src/preload/index.cts` |
 | Call from React | `electron-app/src/renderer/services/{feature}Service.ts` |
 | Add route | `electron-app/src/renderer/routes/{path}.tsx` |
 | Add React component | `electron-app/src/renderer/components/{Name}.tsx` |
@@ -1185,11 +1246,12 @@ electron-app/
 └── dist-electron/           # TypeScript compilation output
     ├── electron/
     │   ├── main.js          # Entry point (package.json "main")
-    │   ├── preload.cjs      # Preload script
     │   ├── database.js
     │   ├── ipc/
     │   ├── service/
     │   └── ...
+    ├── preload/             # Compiled preload scripts
+    │   └── index.cjs        # Preload script
     └── shared/              # Shared types (compiled)
 ```
 
@@ -1282,8 +1344,8 @@ DELETE FROM sync_queue WHERE status = 'failed';
 
 **Problem**: `window.electronAPI` is undefined
 
-- Check preload script is loaded: Verify `webPreferences.preload` in main.ts
-- Check `contextBridge.exposeInMainWorld` is called
+- Check preload script is loaded: Verify `webPreferences.preload` in main.ts points to `dist-electron/preload/index.cjs`
+- Check `contextBridge.exposeInMainWorld` is called in `src/preload/index.cts`
 - Ensure `nodeIntegration: false` and `contextIsolation: true`
 
 **Problem**: IPC handler not responding
@@ -1297,7 +1359,7 @@ ipcMain.handle('todo:getAll', async () => {
 ```
 
 - Check handler is registered in `main.ts`
-- Verify event name matches in preload and handler
+- Verify event name matches in `src/preload/index.cts` and handler
 - Check main process terminal for errors
 
 ### Sync Issues
@@ -1356,7 +1418,7 @@ npm run dev:react
 
 1. Update `EventPayloadMapping` in `ipc.types.ts`
 2. Restart TypeScript server in VS Code (Cmd+Shift+P → "Restart TS Server")
-3. Verify both `preload.cts` and handlers use correct types
+3. Verify both `src/preload/index.cts` and handlers use correct types
 
 ### Backend Issues
 
