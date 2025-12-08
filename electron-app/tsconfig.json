@@ -31,8 +31,7 @@
       "@/*": ["./src/*"],
       "@renderer/*": ["./src/renderer/*"],
       "@shared/*": ["./src/shared/*"],
-      "@electron/*": ["./src/electron/*"],
-      "@preload/*": ["./src/preload/*"]
+      "@electron/*": ["./src/electron/*"]
     }
   }
 }
