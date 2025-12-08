@@ -39,7 +39,7 @@
     "serve": "vite preview",
     "storybook": "storybook dev -p 6006",
     "test": "vitest run",
-    "transpile:electron": "tsc --project src/electron/tsconfig.json && tsc-alias -p src/electron/tsconfig.json && tsc --project src/preload/tsconfig.json && tsc-alias -p src/preload/tsconfig.json"
+    "transpile:electron": "tsc --project src/electron/tsconfig.json && tsc-alias -p src/electron/tsconfig.json"
   },
   "dependencies": {
     "@storybook/react-vite": "^9.1.9",

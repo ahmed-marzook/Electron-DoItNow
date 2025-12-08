@@ -156,8 +156,7 @@ Electron-DoItNow/
 │   │   │   ├── index.cts             # Main entry point - exposes API
 │   │   │   ├── helpers.ts            # Shared IPC helper functions
 │   │   │   ├── todo.ts               # Todo-specific IPC bridge
-│   │   │   ├── user.ts               # User-specific IPC bridge
-│   │   │   └── tsconfig.json         # Preload TypeScript config
+│   │   │   └── user.ts               # User-specific IPC bridge
 │   │   │
 │   │   ├── renderer/                 # React UI (Browser)
 │   │   │   ├── main.tsx              # React app entry point
@@ -458,9 +457,10 @@ src/preload/
 ├── index.cts        # Main entry - exposes complete API
 ├── helpers.ts       # Shared IPC utilities (invoke, on, send)
 ├── todo.ts          # Todo feature API
-├── user.ts          # User feature API
-└── tsconfig.json    # TypeScript configuration
+└── user.ts          # User feature API
 ```
+
+**Note**: Preload files are compiled together with the main process using `src/electron/tsconfig.json`. Both run in the Node.js environment with identical compiler settings, so a separate tsconfig is unnecessary.
 
 **Benefits**:
 - **Maintainability**: Each feature is self-contained
@@ -584,8 +584,8 @@ VITE_APP_NAME=Do It Now
 ```bash
 npm run build
 # 1. vite build → dist-react/
-# 2. tsc --project src/electron/tsconfig.json → dist-electron/
-# 3. tsc-alias -p src/electron/tsconfig.json (resolves @shared/*, etc.)
+# 2. tsc --project src/electron/tsconfig.json → dist-electron/ (compiles both electron/ and preload/)
+# 3. tsc-alias -p src/electron/tsconfig.json (resolves @shared/*, @preload/*, etc.)
 ```
 
 **Distribution Packages**:
