@@ -30,7 +30,7 @@ export function getDatabasePath(): string {
  * Works in both development and production/packaged environments
  */
 export function getPreloadPath() {
-  return path.join(app.getAppPath(), 'dist-electron/preload/index.cjs')
+  return path.join(app.getAppPath(), 'dist-electron/electron/preload.cjs')
 }
 
 /**

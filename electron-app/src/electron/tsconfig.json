@@ -9,9 +9,8 @@
     "paths": {
       "@/*": ["../*"],
       "@shared/*": ["../shared/*"],
-      "@electron/*": ["./*"],
-      "@preload/*": ["../preload/*"]
+      "@electron/*": ["./*"]
     }
   },
-  "include": ["./*", "../preload/*"]
+  "include": ["./*"]
 }
