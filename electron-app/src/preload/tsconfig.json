@@ -1,0 +1,12 @@
+{
+  "extends": "../electron/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist-electron/preload",
+    "paths": {
+      "@/*": ["../*"],
+      "@shared/*": ["../shared/*"],
+      "@preload/*": ["./*"]
+    }
+  },
+  "include": ["./*"]
+}
