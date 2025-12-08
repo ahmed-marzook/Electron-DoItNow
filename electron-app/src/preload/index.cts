@@ -1,7 +1,7 @@
 import { contextBridge } from 'electron'
 import type { ElectronAPI } from '../shared/types/ipc.types.js'
-import { createTodoAPI } from './todo.js'
-import { createUserAPI } from './user.js'
+import { createTodoAPI } from './todo.cjs'
+import { createUserAPI } from './user.cjs'
 
 /**
  * Main preload script entry point

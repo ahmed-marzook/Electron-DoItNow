@@ -1,4 +1,4 @@
-import { ipcInvoke, ipcOn } from './helpers.js'
+import { ipcInvoke, ipcOn } from './helpers.cjs'
 import type { ElectronAPI } from '../shared/types/ipc.types.js'
 
 /**
