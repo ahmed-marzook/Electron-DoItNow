@@ -4,6 +4,12 @@ import type { Todo } from '@shared/types/todo.types'
 import type { User } from '@shared/types/user.types'
 import { todoService } from '@renderer/services/todoService'
 import { userService } from '@renderer/services/userService'
+import { Button } from '@renderer/components/ui/button'
+import { Alert, AlertDescription } from '@renderer/components/ui/alert'
+import { LoadingState } from '@renderer/components/todos/LoadingState'
+import { ErrorState } from '@renderer/components/todos/ErrorState'
+import { TodoForm } from '@renderer/components/todos/TodoForm'
+import { TodoList } from '@renderer/components/todos/TodoList'
 
 export const Route = createFileRoute('/')({
   component: TodosPage,
@@ -54,54 +60,16 @@ function TodosPage() {
       const data = await userService.getAll()
       setUsers(data)
     } catch (err) {
-      // Silently fail if users can't be loaded - it's optional
       console.error('Failed to load users:', err)
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  }
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'bg-red-500/20 border-red-500/40 text-red-200'
-      case 'medium':
-        return 'bg-yellow-500/20 border-yellow-500/40 text-yellow-200'
-      case 'low':
-        return 'bg-green-500/20 border-green-500/40 text-green-200'
-      default:
-        return 'bg-gray-500/20 border-gray-500/40 text-gray-200'
-    }
-  }
-
-  const getUserName = (userId: number | null) => {
-    if (!userId) return null
-    const user = users.find(u => u.id === userId)
-    return user ? user.username : `User #${userId}`
-  }
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-100 to-blue-100">
-        <div className="text-2xl text-gray-700">Loading todos...</div>
-      </div>
-    )
+    return <LoadingState />
   }
 
   if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-100 to-blue-100">
-        <div className="text-2xl text-red-600">Error: {error}</div>
-      </div>
-    )
+    return <ErrorState error={error} />
   }
 
   const toggleTodoCompletion = async (todo: Todo) => {
@@ -237,6 +205,8 @@ function TodosPage() {
     window.electronAPI.todo.manualSync()
   }
 
+  const editingTodo = editingTodoId ? todos.find(t => t.id === editingTodoId) : null
+
   return (
     <div
       className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 p-4 text-white"
@@ -249,338 +219,69 @@ function TodosPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">My Todos</h1>
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={() => {
                 setShowCreateForm(!showCreateForm)
                 if (!showCreateForm) {
                   cancelEditing()
                 }
               }}
-              className="px-4 py-2 bg-green-600/80 hover:bg-green-600 border border-green-500/40 rounded-lg transition-colors"
+              variant={showCreateForm ? 'secondary' : 'success'}
             >
               {showCreateForm ? 'Cancel' : 'New Todo'}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={loadTodos}
-              className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg transition-colors"
+              variant="outline"
             >
               Refresh
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={manualSync}
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+              variant="default"
             >
               Sync Cloud
-            </button>
+            </Button>
           </div>
         </div>
 
-        {showCreateForm && (
-          <div className="mb-6 p-4 bg-white/10 border border-white/20 rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">Create New Todo</h2>
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  value={newTodo.title}
-                  onChange={(e) =>
-                    setNewTodo({ ...newTodo, title: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter todo title"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Description
-                </label>
-                <textarea
-                  value={newTodo.description}
-                  onChange={(e) =>
-                    setNewTodo({ ...newTodo, description: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter description (optional)"
-                  rows={3}
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Priority
-                  </label>
-                  <select
-                    value={newTodo.priority}
-                    onChange={(e) =>
-                      setNewTodo({
-                        ...newTodo,
-                        priority: e.target.value as 'low' | 'medium' | 'high',
-                      })
-                    }
-                    className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Priority level"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Due Date
-                  </label>
-                  <input
-                    type="date"
-                    value={newTodo.due_date}
-                    onChange={(e) =>
-                      setNewTodo({ ...newTodo, due_date: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Select a due date"
-                    aria-label="Due date"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Assign to User (optional)
-                  </label>
-                  <select
-                    value={newTodo.user_id ?? ''}
-                    onChange={(e) =>
-                      setNewTodo({
-                        ...newTodo,
-                        user_id: e.target.value ? Number(e.target.value) : null,
-                      })
-                    }
-                    className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    aria-label="Assign to user"
-                  >
-                    <option value="">None</option>
-                    {users.map((user) => (
-                      <option key={user.id} value={user.id}>
-                        {user.username}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <button
-                onClick={createTodo}
-                className="w-full px-4 py-2 bg-blue-600/80 hover:bg-blue-600 border border-blue-500/40 rounded-lg transition-colors font-medium"
-              >
-                Create Todo
-              </button>
-            </div>
-          </div>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
 
-        {todos.length === 0 ? (
-          <div className="text-center py-12 text-white/60">
-            <p className="text-xl">No todos found</p>
-            <p className="text-sm mt-2">Start by creating your first todo!</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {todos.map((todo) => (
-              <div
-                key={todo.id}
-                className="bg-white/10 border border-white/20 rounded-lg p-4 backdrop-blur-sm shadow-md hover:bg-white/15 transition-colors"
-              >
-                {editingTodoId === todo.id ? (
-                  // Edit Mode
-                  <div className="space-y-3">
-                    <h2 className="text-xl font-semibold mb-3">Edit Todo</h2>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Title *
-                      </label>
-                      <input
-                        type="text"
-                        value={editTodo.title}
-                        onChange={(e) =>
-                          setEditTodo({ ...editTodo, title: e.target.value })
-                        }
-                        className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter todo title"
-                        aria-label="Todo title"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-1">
-                        Description
-                      </label>
-                      <textarea
-                        value={editTodo.description}
-                        onChange={(e) =>
-                          setEditTodo({
-                            ...editTodo,
-                            description: e.target.value,
-                          })
-                        }
-                        className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Enter description (optional)"
-                        rows={3}
-                        aria-label="Todo description"
-                      />
-                    </div>
-                    <div className="grid grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Priority
-                        </label>
-                        <select
-                          value={editTodo.priority}
-                          onChange={(e) =>
-                            setEditTodo({
-                              ...editTodo,
-                              priority: e.target.value as
-                                | 'low'
-                                | 'medium'
-                                | 'high',
-                            })
-                          }
-                          className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          aria-label="Priority level"
-                        >
-                          <option value="low">Low</option>
-                          <option value="medium">Medium</option>
-                          <option value="high">High</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Due Date
-                        </label>
-                        <input
-                          type="date"
-                          value={editTodo.due_date}
-                          onChange={(e) =>
-                            setEditTodo({
-                              ...editTodo,
-                              due_date: e.target.value,
-                            })
-                          }
-                          className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="Select a due date"
-                          aria-label="Due date"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-1">
-                          Assign to User (optional)
-                        </label>
-                        <select
-                          value={editTodo.user_id ?? ''}
-                          onChange={(e) =>
-                            setEditTodo({
-                              ...editTodo,
-                              user_id: e.target.value ? Number(e.target.value) : null,
-                            })
-                          }
-                          className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          aria-label="Assign to user"
-                        >
-                          <option value="">None</option>
-                          {users.map((user) => (
-                            <option key={user.id} value={user.id}>
-                              {user.username}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => updateTodo(todo.id)}
-                        className="flex-1 px-4 py-2 bg-blue-600/80 hover:bg-blue-600 border border-blue-500/40 rounded-lg transition-colors font-medium"
-                      >
-                        Save Changes
-                      </button>
-                      <button
-                        onClick={cancelEditing}
-                        className="flex-1 px-4 py-2 bg-gray-600/80 hover:bg-gray-600 border border-gray-500/40 rounded-lg transition-colors font-medium"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  // View Mode
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <input
-                          type="checkbox"
-                          checked={todo.completed === 1}
-                          onChange={() => toggleTodoCompletion(todo)}
-                          className="w-5 h-5 rounded cursor-pointer"
-                          title="Mark todo as complete"
-                          aria-label={`Mark "${todo.title}" as complete`}
-                          id={`todo-checkbox-${todo.id}`}
-                        />
-                        <h3
-                          className={`text-lg font-semibold ${
-                            todo.completed === 1
-                              ? 'line-through text-white/50'
-                              : 'text-white'
-                          }`}
-                        >
-                          {todo.title}
-                        </h3>
-                      </div>
-                      {todo.description && (
-                        <p className="text-white/80 text-sm ml-8 mb-2">
-                          {todo.description}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-3 ml-8 text-xs text-white/60">
-                        <span>Created: {formatDate(todo.created_at)}</span>
-                        {todo.due_date && (
-                          <span>
-                            Due: {new Date(todo.due_date).toLocaleDateString()}
-                          </span>
-                        )}
-                        {todo.user_id && (
-                          <span className="text-blue-300">
-                            Assigned to: {getUserName(todo.user_id)}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium border ${getPriorityColor(
-                          todo.priority,
-                        )}`}
-                      >
-                        {todo.priority.toUpperCase()}
-                      </span>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => startEditingTodo(todo)}
-                          className="px-3 py-1 bg-blue-600/80 hover:bg-blue-600 border border-blue-500/40 rounded-lg text-xs transition-colors"
-                          title="Edit todo"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => deleteTodo(todo.id)}
-                          className="px-3 py-1 bg-red-600/80 hover:bg-red-600 border border-red-500/40 rounded-lg text-xs transition-colors"
-                          title="Delete todo"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+        {showCreateForm && (
+          <TodoForm
+            title="Create New Todo"
+            formData={newTodo}
+            users={users}
+            onSubmit={createTodo}
+            onChange={(data) => setNewTodo({ ...newTodo, ...data })}
+            submitLabel="Create Todo"
+          />
         )}
+
+        {editingTodo && (
+          <TodoForm
+            title="Edit Todo"
+            formData={editTodo}
+            users={users}
+            onSubmit={() => updateTodo(editingTodo.id)}
+            onCancel={cancelEditing}
+            onChange={(data) => setEditTodo({ ...editTodo, ...data })}
+            submitLabel="Save Changes"
+            showCancel
+          />
+        )}
+
+        <TodoList
+          todos={todos}
+          users={users}
+          onToggleComplete={toggleTodoCompletion}
+          onEdit={startEditingTodo}
+          onDelete={deleteTodo}
+        />
       </div>
     </div>
   )
