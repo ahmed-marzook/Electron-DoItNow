@@ -12,5 +12,5 @@
       "@electron/*": ["./*"]
     }
   },
-  "include": ["./*"]
+  "include": ["./*", "../preload/*", "../shared/*"]
 }
