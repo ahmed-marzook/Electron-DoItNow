@@ -46,6 +46,9 @@ public class Todo {
     @Column(name = "due_date")
     private OffsetDateTime dueDate;
 
+    @Column(name = "assigned_to", length = 255)
+    private String assignedTo;
+
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
