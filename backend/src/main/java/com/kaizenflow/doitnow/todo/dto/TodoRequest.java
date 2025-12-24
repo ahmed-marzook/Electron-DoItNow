@@ -26,5 +26,8 @@ public class TodoRequest {
 
     private OffsetDateTime dueDate;
 
+    @Size(max = 255, message = "Assigned to must not exceed 255 characters")
+    private String assignedTo;
+
     private OffsetDateTime createdAt;
 }

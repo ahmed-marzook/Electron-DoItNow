@@ -12,6 +12,7 @@ public class TodoResponse {
     private Boolean completed;
     private String priority;
     private OffsetDateTime dueDate;
+    private String assignedTo;
     private OffsetDateTime createdAt;
     private OffsetDateTime updatedAt;
 }
