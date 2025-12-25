@@ -3,7 +3,7 @@
     "strict": true,
     "target": "ESNext",
     "module": "NodeNext",
-    "outDir": "../../dist-electron/preload",
+    "outDir": "../../dist-electron",
     "skipLibCheck": true,
     "moduleResolution": "NodeNext",
     "paths": {
