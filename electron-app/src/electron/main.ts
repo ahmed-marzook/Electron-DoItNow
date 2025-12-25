@@ -9,11 +9,11 @@ import { closeDatabase, initDatabase } from './database.js'
 import {
   registerTodoHandlers,
   unregisterTodoHandlers,
-} from '../ipc/todoHandlers.js'
+} from './ipc/todoHandlers.js'
 import {
   registerUserHandlers,
   unregisterUserHandlers,
-} from '../ipc/userHandlers.js'
+} from './ipc/userHandlers.js'
 import { getPreloadPath, getUIPath } from './pathResolver.js'
 import { CronJob } from 'cron'
 import { getSyncService } from './service/SyncService.js'
