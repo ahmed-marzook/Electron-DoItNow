@@ -10,7 +10,7 @@
       "@/*": ["../*"],
       "@shared/*": ["../shared/*"],
       "@electron/*": ["./*"],
-      "@ipc/*": ["../ipc/*"]
+      "@preload/*": ["../preload/*"]
     }
   },
   "include": ["./*", "./ipc/*"]

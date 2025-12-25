@@ -32,7 +32,7 @@
       "@renderer/*": ["./src/renderer/*"],
       "@shared/*": ["./src/shared/*"],
       "@electron/*": ["./src/electron/*"],
-      "@ipc/*": ["./src/ipc/*"]
+      "@preload/*": ["./src/preload/*"]
     }
   }
 }

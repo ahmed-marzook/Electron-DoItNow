@@ -3,14 +3,14 @@
     "strict": true,
     "target": "ESNext",
     "module": "NodeNext",
-    "outDir": "../../dist-electron/ipc",
+    "outDir": "../../dist-electron/preload",
     "skipLibCheck": true,
     "moduleResolution": "NodeNext",
     "paths": {
       "@/*": ["../*"],
       "@shared/*": ["../shared/*"],
       "@electron/*": ["../electron/*"],
-      "@ipc/*": ["./*"]
+      "@preload/*": ["./*"]
     }
   },
   "include": ["./*"]
