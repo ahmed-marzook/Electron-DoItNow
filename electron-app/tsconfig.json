@@ -31,7 +31,8 @@
       "@/*": ["./src/*"],
       "@renderer/*": ["./src/renderer/*"],
       "@shared/*": ["./src/shared/*"],
-      "@electron/*": ["./src/electron/*"]
+      "@electron/*": ["./src/electron/*"],
+      "@ipc/*": ["./src/ipc/*"]
     }
   }
 }

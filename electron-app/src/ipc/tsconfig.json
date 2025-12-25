@@ -3,14 +3,14 @@
     "strict": true,
     "target": "ESNext",
     "module": "NodeNext",
-    "outDir": "../../dist-electron",
+    "outDir": "../../dist-electron/ipc",
     "skipLibCheck": true,
     "moduleResolution": "NodeNext",
     "paths": {
       "@/*": ["../*"],
       "@shared/*": ["../shared/*"],
-      "@electron/*": ["./*"],
-      "@ipc/*": ["../ipc/*"]
+      "@electron/*": ["../electron/*"],
+      "@ipc/*": ["./*"]
     }
   },
   "include": ["./*"]
